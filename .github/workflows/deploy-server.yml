@@ -1,0 +1,38 @@
+name: Deploy Server to Render
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'server/**'
+      - '.github/workflows/deploy-server.yml'
+
+jobs:
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable Corepack (yarn)
+        run: corepack enable
+
+      - name: Install dependencies
+        working-directory: server
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        working-directory: server
+        run: yarn build
+
+      - name: Trigger Render Deploy Hook
+        run: |
+          curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"

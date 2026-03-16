@@ -1,0 +1,15 @@
+{
+  "name": "always-accessibility",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "yarn workspace always-accessibility-server db:setup && concurrently \"yarn workspace always-accessibility-server dev\" \"yarn workspace always-accessibility-client dev\"",
+    "build": "yarn workspace always-accessibility-client build && yarn workspace always-accessibility-server build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

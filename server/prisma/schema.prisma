@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatarUrl String?
+  provider  String   @default("google")
+  createdAt DateTime @default(now())
+
+  ratings Rating[]
+  photos  Photo[]
+}
+
+model Place {
+  id          String   @id @default(cuid())
+  googlePlaceId String? @unique
+  name        String
+  address     String?
+  lat         Float
+  lng         Float
+  category    String?  // restaurant, attraction, transport, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ratings Rating[]
+  photos  Photo[]
+}
+
+model Rating {
+  id                  String            @id @default(cuid())
+  placeId             String
+  userId              String?
+  ramp                AccessibilityLevel
+  toilet              AccessibilityLevel
+  parking             AccessibilityLevel
+  entrance            AccessibilityLevel
+  note                String?
+  submittedBy         String?
+  submitterGoogleId   String?
+  submitterAvatarUrl  String?
+  createdAt           DateTime          @default(now())
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Photo {
+  id        String   @id @default(cuid())
+  placeId   String
+  userId    String
+  url       String
+  createdAt DateTime @default(now())
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum AccessibilityLevel {
+  YES
+  LIMITED
+  NO
+  UNKNOWN
+}
