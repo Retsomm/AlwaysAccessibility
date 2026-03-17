@@ -13,7 +13,7 @@ export default function FilterBar() {
   const { activeFilters, toggleFilter, isLoadingPlaces } = useMapStore()
 
   return (
-    <div className="flex gap-2 overflow-x-auto px-3 py-1 pb-3 pointer-events-auto">
+    <div className="flex gap-2 overflow-x-auto sm:pl-48 pl-1 sm:py-1 py-3 pointer-events-auto">
       {FILTERS.map(({ type, label }) => {
           const isActive = activeFilters.includes(type)
           return (
@@ -21,7 +21,7 @@ export default function FilterBar() {
               key={type}
               onClick={() => toggleFilter(type)}
               disabled={isLoadingPlaces}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium shadow transition-colors ${
+              className={`flex shrink-0 px-3 py-1.5 rounded-full text-sm font-medium shadow transition-colors ${
                 isActive
                   ? 'bg-indigo-500 text-white'
                   : 'bg-white text-gray-700 border border-gray-200 hover:border-indigo-400'
