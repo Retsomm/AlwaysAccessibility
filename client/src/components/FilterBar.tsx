@@ -37,7 +37,7 @@ export default function FilterBar() {
             toggleFilter('toilet')
             toggleFilter('ramp')
           }}
-          className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium shadow transition-colors bg-white text-gray-700 border border-gray-200 hover:border-violet-400"
+          className="flex shrink-0 px-3 py-1.5 rounded-full text-sm font-medium shadow transition-colors bg-white text-gray-700 border border-gray-200 hover:border-violet-400"
           aria-label="顯示台北身障資源圖層"
         >
           身障資源圖層

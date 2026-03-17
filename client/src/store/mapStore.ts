@@ -43,6 +43,12 @@ export interface RouteResult {
   steps: RouteStep[]
 }
 
+type PlaceApiItem = Omit<Place, 'filterType'>
+
+interface PlacesApiResponse {
+  places?: PlaceApiItem[]
+}
+
 export type RouteMode = 'transit' | 'walking' | 'wheelchair'
 
 interface MapState {
@@ -136,9 +142,9 @@ export const useMapStore = create<MapState>((set, get) => ({
         radius: '1500',
       })
       const res = await fetch(`${API_BASE}/api/places?${params}`)
-      const data = (await res.json()) as { places?: any[] }
+      const data = (await res.json()) as PlacesApiResponse
 
-      const newPlaces: Place[] = (data.places ?? []).map((p: any) => ({
+      const newPlaces: Place[] = (data.places ?? []).map((p) => ({
         ...p,
         filterType: filter,
       }))
@@ -178,8 +184,8 @@ export const useMapStore = create<MapState>((set, get) => ({
         radius: '1500',
       })
       const res = await fetch(`${API_BASE}/api/places?${params}`)
-      const data = (await res.json()) as { places?: any[] }
-      const newPlaces: Place[] = (data.places ?? []).map((p: any) => ({
+      const data = (await res.json()) as PlacesApiResponse
+      const newPlaces: Place[] = (data.places ?? []).map((p) => ({
         ...p,
         filterType: 'restaurant' as FilterType,
       }))

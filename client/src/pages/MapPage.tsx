@@ -56,6 +56,31 @@ interface PlaceSuggestion {
   fullText: string
 }
 
+interface GoogleMapsTextValue {
+  toString(): string
+}
+
+interface GoogleMapsPlacePrediction {
+  mainText?: GoogleMapsTextValue
+  secondaryText?: GoogleMapsTextValue
+  text?: GoogleMapsTextValue
+}
+
+interface GoogleMapsAutocompleteSuggestion {
+  placePrediction?: GoogleMapsPlacePrediction
+}
+
+interface GoogleMapsPlacesLibrary {
+  AutocompleteSuggestion: {
+    fetchAutocompleteSuggestions: (params: {
+      input: string
+      language: string
+      region: string
+      locationBias?: google.maps.Circle
+    }) => Promise<{ suggestions: GoogleMapsAutocompleteSuggestion[] }>
+  }
+}
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 
 interface SearchHistoryItem {
@@ -121,22 +146,20 @@ function SearchBar() {
       return
     }
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const lib = await google.maps.importLibrary('places') as any
+      const lib = await google.maps.importLibrary('places') as GoogleMapsPlacesLibrary
       const locationBias = userLocation
         ? new google.maps.Circle({ center: userLocation, radius: 5000 })
         : undefined
       const { suggestions: raw } = await lib.AutocompleteSuggestion
         .fetchAutocompleteSuggestions({ input: value, language: 'zh-TW', region: 'tw', ...(locationBias ? { locationBias } : {}) })
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mapped: PlaceSuggestion[] = (raw as any[])
-        .filter((s: any) => s.placePrediction)
+      const mapped: PlaceSuggestion[] = raw
+        .filter((s) => s.placePrediction)
         .slice(0, 5)
-        .map((s: any) => ({
-          mainText: s.placePrediction.mainText?.toString() ?? '',
-          secondaryText: s.placePrediction.secondaryText?.toString() ?? '',
-          fullText: s.placePrediction.text?.toString() ?? s.placePrediction.mainText?.toString() ?? '',
+        .map((s) => ({
+          mainText: s.placePrediction?.mainText?.toString() ?? '',
+          secondaryText: s.placePrediction?.secondaryText?.toString() ?? '',
+          fullText: s.placePrediction?.text?.toString() ?? s.placePrediction?.mainText?.toString() ?? '',
         }))
 
       setSuggestions(mapped)
@@ -145,7 +168,7 @@ function SearchBar() {
       setSuggestions([])
       setShowSuggestions(false)
     }
-  }, [])
+  }, [userLocation])
 
   const handleInputChange = (value: string) => {
     setKeyword(value)
