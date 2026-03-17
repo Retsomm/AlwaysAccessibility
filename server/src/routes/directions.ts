@@ -61,6 +61,7 @@ router.get('/', async (req: Request, res: Response) => {
         distance: step.distance.text,
         duration: step.duration.text,
         mode: step.travel_mode,
+        startLocation: { lat: step.start_location.lat, lng: step.start_location.lng },
       })),
     })
   } catch {

@@ -18,6 +18,26 @@ model User {
   photos  Photo[]
 }
 
+model Bookmark {
+  id            String   @id @default(cuid())
+  userId        String
+  googlePlaceId String
+  name          String
+  address       String?
+  lat           Float
+  lng           Float
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, googlePlaceId])
+}
+
+model SearchHistory {
+  id         String   @id @default(cuid())
+  userId     String
+  keyword    String
+  searchedAt DateTime @default(now())
+}
+
 model Place {
   id          String   @id @default(cuid())
   googlePlaceId String? @unique

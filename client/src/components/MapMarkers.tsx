@@ -2,6 +2,19 @@ import { AdvancedMarker, InfoWindow } from '@vis.gl/react-google-maps'
 import { useMapStore } from '../store/mapStore'
 import type { DisabilityPoint, Place } from '../store/mapStore'
 
+function UserLocationMarker() {
+  const userLocation = useMapStore((s) => s.userLocation)
+  if (!userLocation) return null
+  return (
+    <AdvancedMarker position={userLocation} title="您的目前位置">
+      <div className="relative w-5 h-5 flex items-center justify-center">
+        <div className="absolute inset-0 rounded-full bg-blue-400 animate-ping opacity-60" />
+        <div className="relative w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-md" />
+      </div>
+    </AdvancedMarker>
+  )
+}
+
 function PlaceMarker({ place }: { place: Place }) {
   const { openMarkerId, setOpenMarkerId } = useMapStore()
 
@@ -58,6 +71,7 @@ export default function MapMarkers() {
 
   return (
     <>
+      <UserLocationMarker />
       {places.map((place) => (
         <PlaceMarker key={place.id} place={place} />
       ))}

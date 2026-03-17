@@ -27,6 +27,16 @@ interface ReviewForm {
   note: string
 }
 
+interface BookmarkItem {
+  id: string
+  googlePlaceId: string
+  name: string
+  address?: string | null
+  lat: number
+  lng: number
+  createdAt: string
+}
+
 const EMPTY_FORM: ReviewForm = { entrance: 'UNKNOWN', toilet: 'UNKNOWN', parking: 'UNKNOWN', ramp: 'UNKNOWN', note: '' }
 
 const LEVEL_OPTIONS: { value: AccessibilityLevel; label: string; active: string }[] = [
@@ -57,6 +67,22 @@ function formatDate(iso: string) {
   if (diff < 86400) return `${Math.floor(diff / 3600)} 小時前`
   if (diff < 86400 * 30) return `${Math.floor(diff / 86400)} 天前`
   return new Date(iso).toLocaleDateString('zh-TW')
+}
+
+function BookmarkIcon({ filled, className = 'w-5 h-5' }: { filled: boolean; className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    </svg>
+  )
 }
 
 function FieldSelector({
@@ -208,17 +234,54 @@ function ReviewFormSection({
 }
 
 export default function PlaceSidebar() {
-  const { openMarkerId, setOpenMarkerId, places } = useMapStore()
+  const {
+    openMarkerId, setOpenMarkerId, places, setFocusLocation,
+    leftPanelOpen, leftPanelTab, setLeftPanelOpen, setLeftPanelTab, addPlace, searchByKeyword,
+  } = useMapStore()
   const user = useAuthStore((s) => s.user)
 
   const place = places.find((p) => p.id === openMarkerId) ?? null
 
+  // Detail view state
   const [ratings, setRatings] = useState<RatingItem[]>([])
   const [loadingRatings, setLoadingRatings] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingRating, setEditingRating] = useState<RatingItem | null>(null)
   const [form, setForm] = useState<ReviewForm>(EMPTY_FORM)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Bookmark state for current place
+  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [isTogglingBookmark, setIsTogglingBookmark] = useState(false)
+
+  // Bookmarks list state
+  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([])
+  const [loadingBookmarks, setLoadingBookmarks] = useState(false)
+
+  // Search history state
+  const [searchHistory, setSearchHistory] = useState<{ id: string; keyword: string }[]>([])
+
+  const fetchSearchHistory = useCallback(async () => {
+    if (!user) return
+    try {
+      const res = await fetch(`${API_BASE}/api/search-history?userId=${encodeURIComponent(user.id)}`)
+      const data = (await res.json()) as { histories?: { id: string; keyword: string }[] }
+      setSearchHistory(data.histories ?? [])
+    } catch {
+      setSearchHistory([])
+    }
+  }, [user])
+
+  useEffect(() => {
+    if ((leftPanelTab === 'results' || leftPanelTab === 'history') && leftPanelOpen && user) {
+      fetchSearchHistory()
+    }
+  }, [leftPanelTab, leftPanelOpen, user, fetchSearchHistory])
+
+  // Auto-open panel when marker is clicked
+  useEffect(() => {
+    if (openMarkerId) setLeftPanelOpen(true)
+  }, [openMarkerId, setLeftPanelOpen])
 
   const fetchRatings = useCallback(async (googlePlaceId: string) => {
     setLoadingRatings(true)
@@ -244,9 +307,70 @@ export default function PlaceSidebar() {
     fetchRatings(place.id)
   }, [place, fetchRatings])
 
-  if (!place) return null
+  // Check bookmark status for current place
+  useEffect(() => {
+    if (!place || !user) { setIsBookmarked(false); return }
+    fetch(`${API_BASE}/api/bookmarks?userId=${encodeURIComponent(user.id)}`)
+      .then((r) => r.json())
+      .then((data: { bookmarks?: { googlePlaceId: string }[] }) => {
+        setIsBookmarked((data.bookmarks ?? []).some((b) => b.googlePlaceId === place.id))
+      })
+      .catch(() => setIsBookmarked(false))
+  }, [place, user])
+
+  const fetchBookmarks = useCallback(async () => {
+    if (!user) return
+    setLoadingBookmarks(true)
+    try {
+      const res = await fetch(`${API_BASE}/api/bookmarks?userId=${encodeURIComponent(user.id)}`)
+      const data = (await res.json()) as { bookmarks?: BookmarkItem[] }
+      setBookmarks(data.bookmarks ?? [])
+    } catch {
+      setBookmarks([])
+    } finally {
+      setLoadingBookmarks(false)
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (leftPanelTab === 'bookmarks' && user) fetchBookmarks()
+  }, [leftPanelTab, user, fetchBookmarks])
+
+  const toggleBookmark = async () => {
+    if (!place || !user || isTogglingBookmark) return
+    setIsTogglingBookmark(true)
+    try {
+      if (isBookmarked) {
+        await fetch(
+          `${API_BASE}/api/bookmarks/${encodeURIComponent(place.id)}?userId=${encodeURIComponent(user.id)}`,
+          { method: 'DELETE' }
+        )
+        setIsBookmarked(false)
+        setBookmarks((prev) => prev.filter((b) => b.googlePlaceId !== place.id))
+      } else {
+        await fetch(`${API_BASE}/api/bookmarks`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            googlePlaceId: place.id,
+            name: place.name,
+            address: place.address,
+            lat: place.location.lat,
+            lng: place.location.lng,
+          }),
+        })
+        setIsBookmarked(true)
+      }
+    } catch {
+      // 靜默失敗
+    } finally {
+      setIsTogglingBookmark(false)
+    }
+  }
 
   const handleAdd = async () => {
+    if (!place) return
     setIsSubmitting(true)
     try {
       const res = await fetch(`${API_BASE}/api/ratings`, {
@@ -265,9 +389,7 @@ export default function PlaceSidebar() {
         }),
       })
       const data = (await res.json()) as { rating?: RatingItem }
-      if (data.rating) {
-        setRatings((prev) => [data.rating!, ...prev])
-      }
+      if (data.rating) setRatings((prev) => [data.rating!, ...prev])
       setShowAddForm(false)
       setForm(EMPTY_FORM)
     } catch {
@@ -315,126 +437,332 @@ export default function PlaceSidebar() {
     setShowAddForm(false)
   }
 
-  const accessibilityBadges = [
-    place.accessibility.wheelchair_entrance && '無障礙入口',
-    place.accessibility.wheelchair_parking && '無障礙停車',
-    place.accessibility.wheelchair_restroom && '無障礙廁所',
-    place.accessibility.wheelchair_seating && '無障礙座位',
-  ].filter(Boolean) as string[]
+  const handleClose = () => {
+    setLeftPanelOpen(false)
+    setOpenMarkerId(null)
+  }
+
+  if (!leftPanelOpen) {
+    return (
+      <button
+        onClick={() => setLeftPanelOpen(true)}
+        aria-label="開啟側邊欄"
+        className="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-lg rounded-r-xl z-10 flex flex-col items-center justify-center gap-1.5 px-2 py-4 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+      >
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <path d="M9 3v18" />
+        </svg>
+        <span className="text-xs font-medium" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>地點資訊</span>
+      </button>
+    )
+  }
+
+  const accessibilityBadges = place
+    ? [
+        place.accessibility.wheelchair_entrance && '無障礙入口',
+        place.accessibility.wheelchair_parking && '無障礙停車',
+        place.accessibility.wheelchair_restroom && '無障礙廁所',
+        place.accessibility.wheelchair_seating && '無障礙座位',
+      ].filter(Boolean) as string[]
+    : []
 
   return (
-    <div className="absolute right-0 top-0 bottom-0 w-80 bg-white shadow-2xl z-10 flex flex-col">
-      {/* 地點資訊 */}
-      <div className="shrink-0">
-        {place.photoName && (
-          <div className="relative">
-            <img
-              src={`${API_BASE}/api/places/photo?name=${encodeURIComponent(place.photoName)}`}
-              alt={place.name}
-              className="w-full h-36 object-cover"
-            />
-            <button
-              onClick={() => setOpenMarkerId(null)}
-              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 hover:bg-white flex items-center justify-center text-gray-600 shadow text-lg leading-none"
-            >
-              ×
-            </button>
-          </div>
-        )}
-        <div className="px-4 py-3 border-b border-gray-100">
-          <div className="flex items-start justify-between gap-2">
-            <h2 className="text-base font-semibold text-gray-900 leading-tight">{place.name}</h2>
-            {!place.photoName && (
+    <div className="absolute left-0 top-0 bottom-0 w-80 bg-white shadow-2xl z-10 flex flex-col">
+      {/* Tab 列 */}
+      <div className="shrink-0 border-b border-gray-100 px-4 pt-3 flex items-center justify-between">
+        <div className="flex gap-4">
+          <button
+            onClick={() => { setLeftPanelTab('results'); setOpenMarkerId(null) }}
+            className={`text-sm font-medium pb-2.5 border-b-2 transition-colors ${
+              leftPanelTab === 'results'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            搜尋結果
+          </button>
+          {user && (
+            <>
               <button
-                onClick={() => setOpenMarkerId(null)}
-                className="shrink-0 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 text-xl leading-none mt-0.5"
+                onClick={() => { setLeftPanelTab('history'); setOpenMarkerId(null) }}
+                className={`text-sm font-medium pb-2.5 border-b-2 transition-colors ${
+                  leftPanelTab === 'history'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-400 hover:text-gray-600'
+                }`}
               >
-                ×
+                搜尋紀錄
               </button>
-            )}
-          </div>
-          {place.rating != null && (
-            <div className="flex items-center gap-1 mt-0.5">
-              <span className="text-amber-500 text-sm">{'★'.repeat(Math.round(place.rating))}</span>
-              <span className="text-gray-300 text-sm">{'★'.repeat(5 - Math.round(place.rating))}</span>
-              <span className="text-xs text-gray-500 ml-0.5">{place.rating}</span>
-            </div>
-          )}
-          {place.address && <p className="text-xs text-gray-500 mt-0.5">{place.address}</p>}
-          {accessibilityBadges.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-1.5">
-              {accessibilityBadges.map((badge) => (
-                <span
-                  key={badge}
-                  className="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded"
-                >
-                  {badge}
-                </span>
-              ))}
-            </div>
+              <button
+                onClick={() => { setLeftPanelTab('bookmarks'); setOpenMarkerId(null) }}
+                className={`text-sm font-medium pb-2.5 border-b-2 transition-colors flex items-center gap-1 ${
+                  leftPanelTab === 'bookmarks'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <BookmarkIcon filled={leftPanelTab === 'bookmarks'} className="w-3.5 h-3.5" />
+                收藏
+              </button>
+            </>
           )}
         </div>
+        <button
+          onClick={handleClose}
+          className="text-gray-400 hover:text-gray-600 text-xl leading-none mb-2"
+          aria-label="關閉面板"
+        >
+          ×
+        </button>
       </div>
 
-      {/* 無障礙評分列表（可捲軸） */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-4 pt-3 pb-1 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-800">社群無障礙資訊</h3>
-          {!loadingRatings && (
-            <span className="text-xs text-gray-400">{ratings.length} 筆</span>
-          )}
-        </div>
+      {/* 主要內容 */}
+      {place && openMarkerId ? (
+        /* 地點詳情 */
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <button
+            onClick={() => setOpenMarkerId(null)}
+            className="shrink-0 flex items-center gap-1 px-4 py-2 text-xs text-indigo-500 hover:text-indigo-700 border-b border-gray-100"
+          >
+            ← 返回列表
+          </button>
 
-        {loadingRatings ? (
-          <p className="px-4 py-4 text-xs text-gray-400">載入中...</p>
-        ) : ratings.length === 0 ? (
-          <p className="px-4 py-3 text-xs text-gray-400">尚無無障礙資訊，歡迎新增！</p>
-        ) : (
-          <div className="px-4">
-            {ratings.map((r) =>
-              editingRating?.id === r.id ? (
-                <div key={r.id} className="py-3 border-b border-gray-100">
-                  <ReviewFormSection
-                    form={form}
-                    onChange={setForm}
-                    onSubmit={handleEditSave}
-                    onCancel={() => { setEditingRating(null); setForm(EMPTY_FORM) }}
-                    isSubmitting={isSubmitting}
-                    title="編輯無障礙資訊"
-                  />
+          <div className="flex-1 overflow-y-auto">
+            {place.photoName && (
+              <img
+                src={`${API_BASE}/api/places/photo?name=${encodeURIComponent(place.photoName)}`}
+                alt={place.name}
+                className="w-full h-36 object-cover"
+              />
+            )}
+
+            <div className="px-4 py-3 border-b border-gray-100">
+              <div className="flex items-start justify-between gap-2">
+                <h2 className="text-base font-semibold text-gray-900 leading-tight">{place.name}</h2>
+                {user && (
+                  <button
+                    onClick={toggleBookmark}
+                    disabled={isTogglingBookmark}
+                    aria-label={isBookmarked ? '取消收藏' : '加入收藏'}
+                    className={`shrink-0 p-1 rounded transition-colors disabled:opacity-40 ${
+                      isBookmarked ? 'text-indigo-500' : 'text-gray-300 hover:text-indigo-400'
+                    }`}
+                  >
+                    <BookmarkIcon filled={isBookmarked} />
+                  </button>
+                )}
+              </div>
+              {place.rating != null && (
+                <div className="flex items-center gap-1 mt-0.5">
+                  <span className="text-amber-500 text-sm">{'★'.repeat(Math.round(place.rating))}</span>
+                  <span className="text-gray-300 text-sm">{'★'.repeat(5 - Math.round(place.rating))}</span>
+                  <span className="text-xs text-gray-500 ml-0.5">{place.rating}</span>
                 </div>
-              ) : (
-                <RatingCard
-                  key={r.id}
-                  rating={r}
-                  currentGoogleId={user?.id}
-                  onEdit={handleStartEdit}
-                />
-              )
+              )}
+              {place.address && <p className="text-xs text-gray-500 mt-0.5">{place.address}</p>}
+              {accessibilityBadges.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {accessibilityBadges.map((badge) => (
+                    <span
+                      key={badge}
+                      className="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded"
+                    >
+                      {badge}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${place.location.lat},${place.location.lng}&travelmode=walking`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-2 text-xs font-medium text-indigo-600 hover:text-indigo-800 underline"
+              >
+                在 Google Maps 開啟導航
+              </a>
+            </div>
+
+            <div className="px-4 pt-3 pb-1 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-800">社群無障礙資訊</h3>
+              {!loadingRatings && (
+                <span className="text-xs text-gray-400">{ratings.length} 筆</span>
+              )}
+            </div>
+
+            {loadingRatings ? (
+              <p className="px-4 py-4 text-xs text-gray-400">載入中...</p>
+            ) : ratings.length === 0 ? (
+              <p className="px-4 py-3 text-xs text-gray-400">尚無無障礙資訊，歡迎新增！</p>
+            ) : (
+              <div className="px-4">
+                {ratings.map((r) =>
+                  editingRating?.id === r.id ? (
+                    <div key={r.id} className="py-3 border-b border-gray-100">
+                      <ReviewFormSection
+                        form={form}
+                        onChange={setForm}
+                        onSubmit={handleEditSave}
+                        onCancel={() => { setEditingRating(null); setForm(EMPTY_FORM) }}
+                        isSubmitting={isSubmitting}
+                        title="編輯無障礙資訊"
+                      />
+                    </div>
+                  ) : (
+                    <RatingCard
+                      key={r.id}
+                      rating={r}
+                      currentGoogleId={user?.id}
+                      onEdit={handleStartEdit}
+                    />
+                  )
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
 
-      {/* 新增按鈕（僅登入使用者） */}
-      {user && (
-        <div className="shrink-0 border-t border-gray-100 px-4 py-3">
-          {showAddForm ? (
-            <ReviewFormSection
-              form={form}
-              onChange={setForm}
-              onSubmit={handleAdd}
-              onCancel={() => { setShowAddForm(false); setForm(EMPTY_FORM) }}
-              isSubmitting={isSubmitting}
-              title="新增無障礙資訊"
-            />
+          {user && (
+            <div className="shrink-0 border-t border-gray-100 px-4 py-3">
+              {showAddForm ? (
+                <ReviewFormSection
+                  form={form}
+                  onChange={setForm}
+                  onSubmit={handleAdd}
+                  onCancel={() => { setShowAddForm(false); setForm(EMPTY_FORM) }}
+                  isSubmitting={isSubmitting}
+                  title="新增無障礙資訊"
+                />
+              ) : (
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className="w-full text-sm text-indigo-600 hover:text-indigo-800 font-medium py-1 text-center"
+                >
+                  + 新增無障礙資訊
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      ) : leftPanelTab === 'results' ? (
+        /* 搜尋結果列表 */
+        <div className="flex-1 overflow-y-auto">
+          {places.length === 0 ? (
+            <div>
+              {user && searchHistory.length > 0 ? (
+                <>
+                  <div className="px-4 py-2.5 border-b border-gray-100">
+                    <p className="text-xs font-medium text-gray-400">最近搜尋</p>
+                  </div>
+                  {searchHistory.map((h) => (
+                    <button
+                      key={h.id}
+                      onClick={() => searchByKeyword(h.keyword)}
+                      className="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                      <svg className="w-3.5 h-3.5 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                      </svg>
+                      <span className="text-sm text-gray-700 truncate">{h.keyword}</span>
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <div className="px-4 py-12 text-center">
+                  <p className="text-sm text-gray-400">請在上方搜尋地點</p>
+                </div>
+              )}
+            </div>
           ) : (
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="w-full text-sm text-indigo-600 hover:text-indigo-800 font-medium py-1 text-center"
-            >
-              + 新增無障礙資訊
-            </button>
+            places.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setOpenMarkerId(p.id)}
+                className="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-800 truncate">{p.name}</p>
+                    {p.address && <p className="text-xs text-gray-500 truncate mt-0.5">{p.address}</p>}
+                    {p.rating != null && (
+                      <span className="text-xs text-amber-500">{'★'.repeat(Math.round(p.rating))} {p.rating}</span>
+                    )}
+                  </div>
+                  {p.accessibility.wheelchair_entrance !== false && (
+                    <span className="shrink-0 text-xs bg-indigo-50 text-indigo-500 border border-indigo-100 px-1.5 py-0.5 rounded mt-0.5">♿</span>
+                  )}
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      ) : leftPanelTab === 'history' ? (
+        /* 搜尋紀錄列表 */
+        <div className="flex-1 overflow-y-auto">
+          {searchHistory.length === 0 ? (
+            <div className="px-4 py-12 text-center">
+              <svg className="w-8 h-8 text-gray-300 mx-auto mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+              </svg>
+              <p className="text-sm text-gray-400">尚無搜尋紀錄</p>
+            </div>
+          ) : (
+            searchHistory.map((h) => (
+              <button
+                key={h.id}
+                onClick={() => {
+                  setLeftPanelTab('results')
+                  searchByKeyword(h.keyword)
+                }}
+                className="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3"
+              >
+                <svg className="w-4 h-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                </svg>
+                <span className="text-sm text-gray-700 truncate">{h.keyword}</span>
+              </button>
+            ))
+          )}
+        </div>
+      ) : (
+        /* 收藏列表 */
+        <div className="flex-1 overflow-y-auto">
+          {loadingBookmarks ? (
+            <p className="px-4 py-8 text-sm text-gray-400 text-center">載入中...</p>
+          ) : bookmarks.length === 0 ? (
+            <div className="px-4 py-12 text-center">
+              <BookmarkIcon filled={false} className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+              <p className="text-sm text-gray-400">尚無收藏地點</p>
+              <p className="text-xs text-gray-300 mt-1">點擊地標後按收藏按鈕加入</p>
+            </div>
+          ) : (
+            bookmarks.map((b) => (
+              <button
+                key={b.id}
+                onClick={() => {
+                  addPlace({
+                    id: b.googlePlaceId,
+                    name: b.name,
+                    location: { lat: b.lat, lng: b.lng },
+                    address: b.address ?? '',
+                    accessibility: {},
+                    types: [],
+                    filterType: 'restaurant',
+                    photoName: null,
+                  })
+                  setOpenMarkerId(b.googlePlaceId)
+                  setFocusLocation({ lat: b.lat, lng: b.lng, zoom: 16 })
+                }}
+                className="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{b.name}</p>
+                    {b.address && <p className="text-xs text-gray-500 truncate mt-0.5">{b.address}</p>}
+                  </div>
+                  <BookmarkIcon filled className="shrink-0 w-4 h-4 text-indigo-400 mt-0.5" />
+                </div>
+              </button>
+            ))
           )}
         </div>
       )}

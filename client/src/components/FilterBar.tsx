@@ -13,9 +13,8 @@ export default function FilterBar() {
   const { activeFilters, toggleFilter, isLoadingPlaces } = useMapStore()
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-10 px-3 py-2 pointer-events-none">
-      <div className="flex gap-2 overflow-x-auto pb-1 pointer-events-auto">
-        {FILTERS.map(({ type, label }) => {
+    <div className="flex gap-2 overflow-x-auto px-3 py-1 pb-3 pointer-events-auto">
+      {FILTERS.map(({ type, label }) => {
           const isActive = activeFilters.includes(type)
           return (
             <button
@@ -43,7 +42,6 @@ export default function FilterBar() {
         >
           身障資源圖層
         </button>
-      </div>
     </div>
   )
 }

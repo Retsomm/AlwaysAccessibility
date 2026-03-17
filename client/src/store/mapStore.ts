@@ -28,17 +28,27 @@ export interface DisabilityPoint {
   address: string
 }
 
+export interface RouteStep {
+  instruction: string
+  distance: string
+  duration: string
+  mode: string
+  startLocation?: { lat: number; lng: number }
+}
+
 export interface RouteResult {
   polyline: string
   duration: string
   distance: string
-  steps: { instruction: string; distance: string; duration: string; mode: string }[]
+  steps: RouteStep[]
 }
 
 export type RouteMode = 'transit' | 'walking' | 'wheelchair'
 
 interface MapState {
   center: { lat: number; lng: number }
+  userLocation: { lat: number; lng: number } | null
+  focusLocation: { lat: number; lng: number; zoom?: number } | null
   activeFilters: FilterType[]
   places: Place[]
   disabilityPoints: DisabilityPoint[]
@@ -46,7 +56,14 @@ interface MapState {
   isLoadingPlaces: boolean
   isLoadingRoute: boolean
   openMarkerId: string | null
+  leftPanelOpen: boolean
+  leftPanelTab: 'results' | 'bookmarks' | 'history'
   setOpenMarkerId: (id: string | null) => void
+  setUserLocation: (loc: { lat: number; lng: number } | null) => void
+  setFocusLocation: (loc: { lat: number; lng: number; zoom?: number } | null) => void
+  setLeftPanelOpen: (open: boolean) => void
+  setLeftPanelTab: (tab: 'results' | 'bookmarks' | 'history') => void
+  addPlace: (place: Place) => void
   toggleFilter: (filter: FilterType) => void
   setCenter: (center: { lat: number; lng: number }) => void
   fetchDisabilityMap: () => Promise<void>
@@ -68,6 +85,8 @@ const FILTER_TYPES: Record<FilterType, string[]> = {
 
 export const useMapStore = create<MapState>((set, get) => ({
   center: { lat: 25.0478, lng: 121.5319 },
+  userLocation: null,
+  focusLocation: null,
   activeFilters: [],
   places: [],
   disabilityPoints: [],
@@ -75,7 +94,19 @@ export const useMapStore = create<MapState>((set, get) => ({
   isLoadingPlaces: false,
   isLoadingRoute: false,
   openMarkerId: null,
+  leftPanelOpen: false,
+  leftPanelTab: 'results',
   setOpenMarkerId: (id) => set({ openMarkerId: id }),
+  setUserLocation: (loc) => set({ userLocation: loc }),
+  setFocusLocation: (loc) => set({ focusLocation: loc }),
+  setLeftPanelOpen: (open) => set({ leftPanelOpen: open }),
+  setLeftPanelTab: (tab) => set({ leftPanelTab: tab }),
+  addPlace: (place) => {
+    const { places } = get()
+    if (!places.find((p) => p.id === place.id)) {
+      set({ places: [...places, place] })
+    }
+  },
 
   toggleFilter: async (filter) => {
     const { activeFilters, center } = get()
@@ -136,12 +167,13 @@ export const useMapStore = create<MapState>((set, get) => ({
   },
 
   searchByKeyword: async (keyword) => {
-    const { center } = get()
+    const { center, userLocation } = get()
+    const searchCenter = userLocation ?? center
     set({ isLoadingPlaces: true })
     try {
       const params = new URLSearchParams({
-        lat: center.lat.toString(),
-        lng: center.lng.toString(),
+        lat: searchCenter.lat.toString(),
+        lng: searchCenter.lng.toString(),
         keyword,
         radius: '1500',
       })
@@ -151,7 +183,10 @@ export const useMapStore = create<MapState>((set, get) => ({
         ...p,
         filterType: 'restaurant' as FilterType,
       }))
-      set({ places: newPlaces, activeFilters: [] })
+      set({ places: newPlaces, activeFilters: [], leftPanelOpen: true, leftPanelTab: 'results' })
+      if (newPlaces.length > 0) {
+        set({ focusLocation: { ...newPlaces[0].location, zoom: 16 } })
+      }
     } catch {
       // 不影響 UI
     } finally {
