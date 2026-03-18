@@ -126,7 +126,7 @@ export default function RoutePanel() {
     return (
       <button
         onClick={() => setCollapsed(false)}
-        className="absolute bottom-5 right-16 bg-indigo-500 text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium z-10"
+        className="absolute bottom-5 right-4 bg-sky-600 text-white px-4 py-2 shadow-lg text-md font-medium z-10 cursor-pointer"
       >
         路線規劃
       </button>
@@ -134,10 +134,10 @@ export default function RoutePanel() {
   }
 
   return (
-    <div className="absolute bottom-4 left-4 right-4 bg-white rounded-2xl shadow-xl z-10 overflow-hidden">
+    <div className="absolute bottom-4 left-4 right-4 bg-white rounded-2xl shadow-xl z-100 overflow-hidden">
       <div className="px-4 pt-3 pb-2 flex items-center justify-between border-b border-gray-100">
-        <span className="text-sm font-semibold text-gray-800">無障礙路線規劃</span>
-        <button onClick={() => setCollapsed(true)} className="text-gray-400 text-xs hover:text-gray-600">
+        <span className="text-md font-semibold text-gray-800">無障礙路線規劃</span>
+        <button onClick={() => setCollapsed(true)} className="text-gray-400 text-md hover:text-gray-600 cursor-pointer">
           收起
         </button>
       </div>
@@ -147,14 +147,14 @@ export default function RoutePanel() {
           value={origin}
           onChange={(e) => setOrigin(e.target.value)}
           placeholder="起點（地址或地名）"
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-400"
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-md text-gray-900 outline-none focus:border-sky-400"
           aria-label="起點"
         />
         <input
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
           placeholder="終點（地址或地名）"
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-400"
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-md text-gray-900 outline-none focus:border-sky-400"
           aria-label="終點"
           onKeyDown={(e) => e.key === 'Enter' && handlePlan()}
         />
@@ -163,10 +163,10 @@ export default function RoutePanel() {
             <button
               key={opt.value}
               onClick={() => setMode(opt.value)}
-              className={`flex-1 shrink-0 py-1.5 px-2 rounded-lg text-xs font-medium border transition-colors ${
+              className={`flex-1 shrink-0 py-1.5 px-2 rounded-lg text-md font-medium border transition-colors cursor-pointer ${
                 mode === opt.value
-                  ? 'bg-indigo-500 text-white border-indigo-500'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-400'
+                  ? 'bg-sky-600 text-white border-sky-500'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-sky-400'
               }`}
               aria-pressed={mode === opt.value}
             >
@@ -177,7 +177,7 @@ export default function RoutePanel() {
         <button
           onClick={handlePlan}
           disabled={isLoadingRoute || !origin.trim() || !destination.trim()}
-          className="w-full bg-indigo-500 text-white py-2 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-indigo-600 transition-colors"
+          className="w-full bg-sky-600 text-white py-2 rounded-lg text-md font-medium disabled:opacity-50 hover:bg-sky-600 transition-colors cursor-pointer"
         >
           {isLoadingRoute ? '規劃中...' : '規劃路線'}
         </button>
@@ -187,23 +187,23 @@ export default function RoutePanel() {
         <div className="px-4 pb-4 space-y-2">
           {/* 導航進行中：顯示目前步驟 */}
           {isNavigating && (
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 space-y-1">
+            <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-indigo-700">
+                <span className="text-md font-semibold text-sky-700">
                   導航中 — 第 {currentStep + 1} / {route.steps.length} 步
                 </span>
                 <button
                   onClick={stopNavigation}
-                  className="text-xs text-red-500 font-medium hover:text-red-700"
+                  className="text-md text-red-500 font-medium hover:text-red-700 cursor-pointer"
                 >
                   停止導航
                 </button>
               </div>
-              <p className="text-sm font-medium text-gray-800 leading-snug">
+              <p className="text-md font-medium text-gray-800 leading-snug">
                 {route.steps[currentStep]?.instruction}
               </p>
               {route.steps[currentStep + 1] && (
-                <p className="text-xs text-gray-500">
+                <p className="text-md text-gray-500">
                   下一步：{route.steps[currentStep + 1].instruction}
                 </p>
               )}
@@ -211,7 +211,7 @@ export default function RoutePanel() {
           )}
 
           {/* 路線摘要與控制 */}
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between text-md">
             <div className="flex gap-3 text-gray-600">
               <span>時間：{route.duration}</span>
               <span>距離：{route.distance}</span>
@@ -220,19 +220,19 @@ export default function RoutePanel() {
               {!isNavigating && (
                 <button
                   onClick={() => setShowSteps((s) => !s)}
-                  className="text-indigo-500 text-xs hover:underline"
+                  className="text-sky-500 text-md hover:underline cursor-pointer"
                 >
                   {showSteps ? '收起步驟' : '查看步驟'}
                 </button>
               )}
               <button
                 onClick={handleVoice}
-                className="text-green-600 text-xs hover:underline"
+                className="text-green-600 text-md hover:underline cursor-pointer"
                 aria-label="語音朗讀路線"
               >
                 語音
               </button>
-              <button onClick={handleClear} className="text-gray-400 text-xs hover:text-gray-600">
+              <button onClick={handleClear} className="text-gray-400 text-md hover:text-gray-600 cursor-pointer">
                 清除
               </button>
             </div>
@@ -242,7 +242,7 @@ export default function RoutePanel() {
           {!isNavigating && (
             <button
               onClick={handleStartNavigation}
-              className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg text-sm font-medium transition-colors"
+              className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg text-md font-medium transition-colors cursor-pointer"
             >
               開始導航
             </button>
@@ -253,7 +253,7 @@ export default function RoutePanel() {
             href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=${mode === 'transit' ? 'transit' : 'walking'}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="block text-center text-xs font-medium text-indigo-600 hover:text-indigo-800 underline"
+            className="block text-center text-md font-medium text-sky-600 hover:text-sky-800 underline cursor-pointer"
           >
             在 Google Maps 開啟導航
           </a>
@@ -261,8 +261,8 @@ export default function RoutePanel() {
           {showSteps && !isNavigating && (
             <ol className="space-y-1.5 max-h-36 overflow-y-auto border-t border-gray-100 pt-2">
               {route.steps.map((step, i) => (
-                <li key={i} className="text-xs text-gray-600 flex gap-2">
-                  <span className="shrink-0 w-4 text-right font-medium text-indigo-500">{i + 1}.</span>
+                <li key={i} className="text-md text-gray-600 flex gap-2">
+                  <span className="shrink-0 w-4 text-right font-medium text-sky-500">{i + 1}.</span>
                   <span>{step.instruction}</span>
                 </li>
               ))}

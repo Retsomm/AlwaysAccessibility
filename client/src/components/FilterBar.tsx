@@ -21,10 +21,10 @@ export default function FilterBar() {
               key={type}
               onClick={() => toggleFilter(type)}
               disabled={isLoadingPlaces}
-              className={`flex shrink-0 px-3 py-1.5 rounded-full text-sm font-medium shadow transition-colors ${
+              className={`flex shrink-0 px-3 py-1.5 text-md font-medium shadow transition-colors cursor-pointer ${
                 isActive
-                  ? 'bg-indigo-500 text-white'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:border-indigo-400'
+                  ? 'bg-sky-600 text-white'
+                  : 'bg-white text-gray-700 border border-gray-200 hover:border-sky-400'
               } disabled:opacity-60`}
               aria-pressed={isActive}
             >
@@ -37,7 +37,7 @@ export default function FilterBar() {
             toggleFilter('toilet')
             toggleFilter('ramp')
           }}
-          className="flex shrink-0 px-3 py-1.5 rounded-full text-sm font-medium shadow transition-colors bg-white text-gray-700 border border-gray-200 hover:border-violet-400"
+          className="flex shrink-0 px-3 py-1.5 text-md font-medium shadow transition-colors bg-white text-gray-700 border border-gray-200 hover:border-sky-400 cursor-pointer"
           aria-label="顯示台北身障資源圖層"
         >
           身障資源圖層

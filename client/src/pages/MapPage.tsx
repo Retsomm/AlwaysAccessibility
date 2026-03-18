@@ -38,7 +38,7 @@ function RoutePolyline() {
     const path = geometry.encoding.decodePath(route.polyline)
     const polyline = new google.maps.Polyline({
       path,
-      strokeColor: '#6366f1',
+      strokeColor: '#38bdf8',
       strokeWeight: 5,
       strokeOpacity: 0.8,
     })
@@ -218,7 +218,7 @@ function SearchBar() {
   }
 
   return (
-    <div ref={containerRef} className="flex gap-2 flex-1 relative">
+    <div ref={containerRef} className="flex gap-2 flex-1 min-w-60 md:min-w-0 relative">
       <div className="flex-1 relative min-w-0">
         <input
           value={keyword}
@@ -229,7 +229,7 @@ function SearchBar() {
             if (!keyword.trim() && user) { fetchRecentSearches().then(() => setShowRecent(true)) }
           }}
           placeholder="搜尋地點（如：麥當勞、台北車站）"
-          className="w-full bg-white/20 placeholder-white/70 text-white text-sm rounded-lg px-3 py-1.5 outline-none focus:bg-white/30"
+          className="w-full bg-white/20 placeholder-white/70 text-white text-md rounded-lg px-3 py-1.5 outline-none focus:bg-white/30"
           aria-label="關鍵字搜尋"
           autoComplete="off"
         />
@@ -239,11 +239,11 @@ function SearchBar() {
               <button
                 key={i}
                 onMouseDown={(e) => { e.preventDefault(); handleSelectSuggestion(s) }}
-                className="w-full text-left px-3 py-2.5 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors"
+                className="w-full text-left px-3 py-2.5 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors cursor-pointer"
               >
-                <p className="text-sm font-medium text-gray-800 truncate">{s.mainText}</p>
+                <p className="text-md font-medium text-gray-800 truncate">{s.mainText}</p>
                 {s.secondaryText && (
-                  <p className="text-xs text-gray-400 truncate mt-0.5">{s.secondaryText}</p>
+                  <p className="text-md text-gray-400 truncate mt-0.5">{s.secondaryText}</p>
                 )}
               </button>
             ))}
@@ -252,10 +252,10 @@ function SearchBar() {
         {showRecent && !showSuggestions && recentSearches.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl overflow-hidden z-50">
             <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
-              <span className="text-xs text-gray-400 font-medium">最近搜尋</span>
+              <span className="text-md text-gray-400 font-medium">最近搜尋</span>
               <button
                 onMouseDown={(e) => { e.preventDefault(); handleClearHistory() }}
-                className="text-xs text-gray-400 hover:text-gray-600"
+                className="text-md text-gray-400 hover:text-gray-600"
               >
                 清除
               </button>
@@ -264,10 +264,10 @@ function SearchBar() {
               <button
                 key={h.id}
                 onMouseDown={(e) => { e.preventDefault(); handleSelectRecent(h.keyword) }}
-                className="w-full text-left px-3 py-2.5 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors flex items-center gap-2"
+                className="w-full text-left px-3 py-2.5 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors flex items-center gap-2 cursor-pointer"
               >
-                <span className="text-gray-400 text-xs">🕐</span>
-                <span className="text-sm text-gray-700 truncate">{h.keyword}</span>
+                <span className="text-gray-400 text-md">🕐</span>
+                <span className="text-md text-gray-700 truncate">{h.keyword}</span>
               </button>
             ))}
           </div>
@@ -276,7 +276,7 @@ function SearchBar() {
       <button
         onClick={handleSearch}
         disabled={isLoadingPlaces || !keyword.trim()}
-        className="bg-white text-indigo-600 px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50 shrink-0"
+        className="bg-white text-sky-600 px-3 py-1.5 rounded-lg text-md font-medium disabled:opacity-50 shrink-0 cursor-pointer"
       >
         {isLoadingPlaces ? '搜尋中' : '搜尋'}
       </button>
@@ -302,24 +302,24 @@ function UserButton() {
     return (
       <button
         onClick={() => login()}
-        className="shrink-0 bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
+        className="absolute bottom-0 -right-2 bg-sky-600 text-white px-4 py-2 w-16 shadow-lg text-md font-medium z-10 cursor-pointer"
       >
-        登入
+  登入
       </button>
     )
   }
 
   return (
     <div className="relative shrink-0">
-      <button onClick={() => setShowMenu((v) => !v)} className="flex items-center gap-1.5">
-        <img src={user.avatar} alt={user.name} className="w-7 h-7 rounded-full border-2 border-white/60" />
+      <button onClick={() => setShowMenu((v) => !v)} className="flex items-center gap-1.5 cursor-pointer">
+        <img src={user.avatar} alt={user.name} className="w-10 h-10 border-2 border-white/60" />
       </button>
       {showMenu && (
-        <div className="absolute right-0 top-9 bg-white rounded-xl shadow-lg py-1 min-w-35 z-20">
-          <p className="px-3 py-1.5 text-xs text-gray-500 border-b border-gray-100">{user.name}</p>
+        <div className="absolute right-0 bottom-9 bg-white rounded-xl shadow-lg py-1 min-w-35 z-20">
+          <p className="px-3 py-1.5 text-md text-gray-500 border-b border-gray-100">{user.name}</p>
           <button
             onClick={() => { logout(); setShowMenu(false) }}
-            className="w-full text-left px-3 py-2 text-xs text-red-500 hover:bg-gray-50"
+            className="w-full text-left px-3 py-2 text-md text-red-500 hover:bg-gray-50 cursor-pointer"
           >
             登出
           </button>
@@ -349,16 +349,16 @@ function LocateButton() {
   }
 
   return (
-    <MapControl position={ControlPosition.RIGHT_BOTTOM}>
+    <MapControl position={ControlPosition.RIGHT_TOP}>
       <button
         onClick={handleLocate}
         disabled={locating}
         title="定位到目前位置"
-        className="m-2.5 w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-60 transition-colors"
+        className="m-2.5 w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-60 transition-colors cursor-pointer"
         style={{ border: '1px solid rgba(0,0,0,0.12)' }}
       >
         {locating ? (
-          <svg className="w-5 h-5 animate-spin text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-5 h-5 animate-spin text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" />
           </svg>
         ) : (
@@ -380,10 +380,9 @@ export default function MapPage() {
   return (
     <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['places', 'geometry']}>
       <main className="flex flex-col h-full">
-        <header className="text-white px-4 py-3 flex items-center gap-3 shrink-0" style={{ background: 'linear-gradient(to right, #8b5cf6, #4f46e5)' }}>
-          <h1 className="text-lg font-semibold shrink-0">無障礙地圖</h1>
+        <header className="text-white px-4 py-3 flex items-center gap-3 shrink-0" style={{ background: 'linear-gradient(to right, #38bdf8, #0284c7)' }}>
+          <h1 className="text-lg font-semibold shrink-0 sm:flex hidden">無障礙地圖</h1>
           <SearchBar />
-          <UserButton />
         </header>
 
         {/* 手機版篩選列（header 下方靜態列） */}
@@ -393,7 +392,7 @@ export default function MapPage() {
 
         <div className="flex-1 relative">
           {/* 桌機版過濾器列（地圖上方浮層） */}
-          <div className={`hidden md:block absolute top-2 right-0 z-10 pointer-events-none transition-all duration-200 ${leftPanelOpen ? 'left-80' : 'left-10'}`}>
+          <div className={`hidden md:block absolute top-2 right-0 z-10 pointer-events-none transition-all duration-200 w-fit ${leftPanelOpen ? 'left-80' : 'left-10'}`}>
             <FilterBar />
           </div>
 
@@ -401,6 +400,10 @@ export default function MapPage() {
             defaultCenter={{ lat: 25.0478, lng: 121.5319 }}
             defaultZoom={14}
             gestureHandling="greedy"
+            cameraControl
+            cameraControlOptions={{ position: ControlPosition.RIGHT_TOP }}
+            fullscreenControlOptions={{ position: ControlPosition.RIGHT_TOP }}
+            streetViewControlOptions={{ position: ControlPosition.RIGHT_TOP }}
             style={{ width: '100%', height: '100%' }}
             mapId="accessibility-map"
             onClick={() => setOpenMarkerId(null)}
@@ -413,6 +416,11 @@ export default function MapPage() {
 
           {/* 路線規劃面板（地圖下方浮層） */}
           <RoutePanel />
+
+          {/* 登入按鈕（路線規劃區塊左側） */}
+          <div className="absolute bottom-5 right-32 z-10">
+            <UserButton />
+          </div>
 
           {/* 地點詳情側邊欄 */}
           <PlaceSidebar />

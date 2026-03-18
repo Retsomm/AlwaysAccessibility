@@ -21,8 +21,8 @@ function PlaceMarker({ place }: { place: Place }) {
   return (
     <AdvancedMarker position={place.location} onClick={() => setOpenMarkerId(place.id)} title={place.name}>
       <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md border-2 border-white ${
-          openMarkerId === place.id ? 'bg-indigo-700 scale-110' : place.accessibility.wheelchair_entrance !== false ? 'bg-indigo-500' : 'bg-gray-400'
+        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-md font-bold shadow-md border-2 border-white ${
+          openMarkerId === place.id ? 'bg-sky-600 scale-110' : place.accessibility.wheelchair_entrance !== false ? 'bg-sky-600' : 'bg-gray-400'
         } transition-transform`}
       >
         ♿
@@ -39,20 +39,20 @@ function DisabilityPointMarker({ point }: { point: DisabilityPoint }) {
   return (
     <>
       <AdvancedMarker position={position} onClick={() => setOpenMarkerId(point.id)} title={point.name}>
-        <div className="w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center text-white text-xs font-bold shadow-md border-2 border-white">
-          資
+        <div className="w-6 h-6 rounded-full bg-sky-500 flex items-center justify-center text-white text-md font-bold shadow-md border-2 border-white">
+        
         </div>
       </AdvancedMarker>
 
       {open && (
         <InfoWindow position={position} onCloseClick={() => setOpenMarkerId(null)}>
           <div className="max-w-50 space-y-1">
-            <p className="font-semibold text-sm leading-tight">{point.name}</p>
+            <p className="font-semibold text-md leading-tight">{point.name}</p>
             {point.category && point.category !== 'general' && (
-              <p className="text-xs text-gray-500">{point.category}</p>
+              <p className="text-md text-gray-500">{point.category}</p>
             )}
             {point.address && (
-              <p className="text-xs text-gray-500">{point.address}</p>
+              <p className="text-md text-gray-500">{point.address}</p>
             )}
           </div>
         </InfoWindow>

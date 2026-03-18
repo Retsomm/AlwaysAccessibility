@@ -96,7 +96,7 @@ function FieldSelector({
 }) {
   return (
     <div className="space-y-1">
-      <p className="text-xs text-gray-600 font-medium">
+      <p className="text-md text-gray-600 font-medium">
         {field.icon} {field.label}
       </p>
       <div className="flex gap-1">
@@ -105,7 +105,7 @@ function FieldSelector({
             key={opt.value}
             type="button"
             onClick={() => onChange(opt.value)}
-            className={`flex-1 text-xs py-1 rounded border transition-colors ${
+            className={`flex-1 text-md py-1 rounded border transition-colors cursor-pointer ${
               value === opt.value ? opt.active : 'border-gray-200 text-gray-400 hover:border-gray-300 hover:text-gray-500'
             }`}
           >
@@ -141,23 +141,23 @@ function RatingCard({
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold shrink-0">
+          <div className="w-8 h-8 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center text-md font-bold shrink-0">
             {initial}
           </div>
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-medium text-gray-800 truncate">{displayName}</span>
+            <span className="text-md font-medium text-gray-800 truncate">{displayName}</span>
             {isOwner && (
               <button
                 onClick={() => onEdit(rating)}
-                className="shrink-0 text-xs text-indigo-500 hover:text-indigo-700 font-medium"
+                className="shrink-0 text-md text-sky-500 hover:text-sky-700 font-medium cursor-pointer"
               >
                 編輯
               </button>
             )}
           </div>
-          <span className="text-xs text-gray-400">{formatDate(rating.createdAt)}</span>
+          <span className="text-md text-gray-400">{formatDate(rating.createdAt)}</span>
         </div>
       </div>
 
@@ -167,15 +167,15 @@ function RatingCard({
           const { icon, color } = LEVEL_DISPLAY[lvl]
           return (
             <div key={f.key} className="text-center">
-              <div className={`text-sm font-bold ${color}`}>{icon}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{f.short}</div>
+              <div className={`text-md font-bold ${color}`}>{icon}</div>
+              <div className="text-md text-gray-500 mt-0.5">{f.short}</div>
             </div>
           )
         })}
       </div>
 
       {rating.note && (
-        <p className="text-xs text-gray-600 mt-1.5 leading-relaxed italic">「{rating.note}」</p>
+        <p className="text-md text-gray-600 mt-1.5 leading-relaxed italic">「{rating.note}」</p>
       )}
     </div>
   )
@@ -198,7 +198,7 @@ function ReviewFormSection({
 }) {
   return (
     <div className="space-y-3">
-      <p className="text-xs font-semibold text-gray-700">{title}</p>
+      <p className="text-md font-semibold text-gray-700">{title}</p>
       {FIELDS.map((f) => (
         <FieldSelector
           key={f.key}
@@ -212,19 +212,19 @@ function ReviewFormSection({
         onChange={(e) => onChange({ ...form, note: e.target.value })}
         placeholder="補充說明（選填）"
         rows={2}
-        className="w-full text-xs border border-gray-200 rounded px-2 py-1.5 text-gray-800 outline-none resize-none focus:border-indigo-300"
+        className="w-full text-md border border-gray-200 rounded px-2 py-1.5 text-gray-800 outline-none resize-none focus:border-sky-300"
       />
       <div className="flex gap-2">
         <button
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white text-xs py-2 rounded font-medium disabled:opacity-50 transition-colors"
+          className="flex-1 bg-sky-600 hover:bg-sky-700 text-white text-md py-2 rounded font-medium disabled:opacity-50 transition-colors cursor-pointer"
         >
           {isSubmitting ? '儲存中...' : '儲存'}
         </button>
         <button
           onClick={onCancel}
-          className="text-xs text-gray-400 hover:text-gray-600 px-3"
+          className="text-md text-gray-400 hover:text-gray-600 px-3 cursor-pointer"
         >
           取消
         </button>
@@ -447,13 +447,13 @@ export default function PlaceSidebar() {
       <button
         onClick={() => setLeftPanelOpen(true)}
         aria-label="開啟側邊欄"
-        className="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-lg rounded-r-xl z-10 flex flex-col items-center justify-center gap-1.5 px-2 py-4 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+        className="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-lg rounded-r-xl z-10 flex flex-col items-center justify-center gap-1.5 px-2 py-4 text-gray-500 hover:text-sky-600 hover:bg-sky-50 transition-colors cursor-pointer"
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="3" width="18" height="18" rx="2" />
           <path d="M9 3v18" />
         </svg>
-        <span className="text-xs font-medium" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>地點資訊</span>
+        <span className="text-md font-medium" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>地點資訊</span>
       </button>
     )
   }
@@ -474,9 +474,9 @@ export default function PlaceSidebar() {
         <div className="flex gap-4">
           <button
             onClick={() => { setLeftPanelTab('results'); setOpenMarkerId(null) }}
-            className={`text-sm font-medium pb-2.5 border-b-2 transition-colors ${
+            className={`text-md font-medium pb-2.5 border-b-2 transition-colors cursor-pointer ${
               leftPanelTab === 'results'
-                ? 'border-indigo-500 text-indigo-600'
+                ? 'border-sky-500 text-sky-600'
                 : 'border-transparent text-gray-400 hover:text-gray-600'
             }`}
           >
@@ -486,9 +486,9 @@ export default function PlaceSidebar() {
             <>
               <button
                 onClick={() => { setLeftPanelTab('history'); setOpenMarkerId(null) }}
-                className={`text-sm font-medium pb-2.5 border-b-2 transition-colors ${
+                className={`text-md font-medium pb-2.5 border-b-2 transition-colors cursor-pointer ${
                   leftPanelTab === 'history'
-                    ? 'border-indigo-500 text-indigo-600'
+                    ? 'border-sky-500 text-sky-600'
                     : 'border-transparent text-gray-400 hover:text-gray-600'
                 }`}
               >
@@ -496,9 +496,9 @@ export default function PlaceSidebar() {
               </button>
               <button
                 onClick={() => { setLeftPanelTab('bookmarks'); setOpenMarkerId(null) }}
-                className={`text-sm font-medium pb-2.5 border-b-2 transition-colors flex items-center gap-1 ${
+                className={`text-md font-medium pb-2.5 border-b-2 transition-colors flex items-center gap-1 cursor-pointer ${
                   leftPanelTab === 'bookmarks'
-                    ? 'border-indigo-500 text-indigo-600'
+                    ? 'border-sky-500 text-sky-600'
                     : 'border-transparent text-gray-400 hover:text-gray-600'
                 }`}
               >
@@ -510,7 +510,7 @@ export default function PlaceSidebar() {
         </div>
         <button
           onClick={handleClose}
-          className="text-gray-400 hover:text-gray-600 text-xl leading-none mb-2"
+          className="text-gray-400 hover:text-gray-600 text-xl leading-none mb-2 cursor-pointer"
           aria-label="關閉面板"
         >
           ×
@@ -523,7 +523,7 @@ export default function PlaceSidebar() {
         <div className="flex flex-col flex-1 overflow-hidden">
           <button
             onClick={() => setOpenMarkerId(null)}
-            className="shrink-0 flex items-center gap-1 px-4 py-2 text-xs text-indigo-500 hover:text-indigo-700 border-b border-gray-100"
+            className="shrink-0 flex items-center gap-1 px-4 py-2 text-md text-sky-500 hover:text-sky-700 border-b border-gray-100 cursor-pointer"
           >
             ← 返回列表
           </button>
@@ -545,8 +545,8 @@ export default function PlaceSidebar() {
                     onClick={toggleBookmark}
                     disabled={isTogglingBookmark}
                     aria-label={isBookmarked ? '取消收藏' : '加入收藏'}
-                    className={`shrink-0 p-1 rounded transition-colors disabled:opacity-40 ${
-                      isBookmarked ? 'text-indigo-500' : 'text-gray-300 hover:text-indigo-400'
+                    className={`shrink-0 p-1 rounded transition-colors disabled:opacity-40 cursor-pointer ${
+                      isBookmarked ? 'text-sky-500' : 'text-gray-300 hover:text-sky-400'
                     }`}
                   >
                     <BookmarkIcon filled={isBookmarked} />
@@ -555,18 +555,18 @@ export default function PlaceSidebar() {
               </div>
               {place.rating != null && (
                 <div className="flex items-center gap-1 mt-0.5">
-                  <span className="text-amber-500 text-sm">{'★'.repeat(Math.round(place.rating))}</span>
-                  <span className="text-gray-300 text-sm">{'★'.repeat(5 - Math.round(place.rating))}</span>
-                  <span className="text-xs text-gray-500 ml-0.5">{place.rating}</span>
+                  <span className="text-amber-500 text-md">{'★'.repeat(Math.round(place.rating))}</span>
+                  <span className="text-gray-300 text-md">{'★'.repeat(5 - Math.round(place.rating))}</span>
+                  <span className="text-md text-gray-500 ml-0.5">{place.rating}</span>
                 </div>
               )}
-              {place.address && <p className="text-xs text-gray-500 mt-0.5">{place.address}</p>}
+              {place.address && <p className="text-md text-gray-500 mt-0.5">{place.address}</p>}
               {accessibilityBadges.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1.5">
                   {accessibilityBadges.map((badge) => (
                     <span
                       key={badge}
-                      className="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded"
+                      className="text-md bg-sky-50 text-sky-700 border border-sky-200 px-1.5 py-0.5 rounded"
                     >
                       {badge}
                     </span>
@@ -577,23 +577,23 @@ export default function PlaceSidebar() {
                 href={`https://www.google.com/maps/dir/?api=1&destination=${place.location.lat},${place.location.lng}&travelmode=walking`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block mt-2 text-xs font-medium text-indigo-600 hover:text-indigo-800 underline"
+                className="inline-block mt-2 text-md font-medium text-sky-600 hover:text-sky-800 underline"
               >
                 在 Google Maps 開啟導航
               </a>
             </div>
 
             <div className="px-4 pt-3 pb-1 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-800">社群無障礙資訊</h3>
+              <h3 className="text-md font-semibold text-gray-800">社群無障礙資訊</h3>
               {!loadingRatings && (
-                <span className="text-xs text-gray-400">{ratings.length} 筆</span>
+                <span className="text-md text-gray-400">{ratings.length} 筆</span>
               )}
             </div>
 
             {loadingRatings ? (
-              <p className="px-4 py-4 text-xs text-gray-400">載入中...</p>
+              <p className="px-4 py-4 text-md text-gray-400">載入中...</p>
             ) : ratings.length === 0 ? (
-              <p className="px-4 py-3 text-xs text-gray-400">尚無無障礙資訊，歡迎新增！</p>
+              <p className="px-4 py-3 text-md text-gray-400">尚無無障礙資訊，歡迎新增！</p>
             ) : (
               <div className="px-4">
                 {ratings.map((r) =>
@@ -635,7 +635,7 @@ export default function PlaceSidebar() {
               ) : (
                 <button
                   onClick={() => setShowAddForm(true)}
-                  className="w-full text-sm text-indigo-600 hover:text-indigo-800 font-medium py-1 text-center"
+                  className="w-full text-md text-sky-600 hover:text-sky-800 font-medium py-1 text-center cursor-pointer"
                 >
                   + 新增無障礙資訊
                 </button>
@@ -651,24 +651,24 @@ export default function PlaceSidebar() {
               {user && searchHistory.length > 0 ? (
                 <>
                   <div className="px-4 py-2.5 border-b border-gray-100">
-                    <p className="text-xs font-medium text-gray-400">最近搜尋</p>
+                    <p className="text-md font-medium text-gray-400">最近搜尋</p>
                   </div>
                   {searchHistory.map((h) => (
                     <button
                       key={h.id}
                       onClick={() => searchByKeyword(h.keyword)}
-                      className="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                      className="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-2 cursor-pointer"
                     >
                       <svg className="w-3.5 h-3.5 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
                       </svg>
-                      <span className="text-sm text-gray-700 truncate">{h.keyword}</span>
+                      <span className="text-md text-gray-700 truncate">{h.keyword}</span>
                     </button>
                   ))}
                 </>
               ) : (
                 <div className="px-4 py-12 text-center">
-                  <p className="text-sm text-gray-400">請在上方搜尋地點</p>
+                  <p className="text-md text-gray-400">請在上方搜尋地點</p>
                 </div>
               )}
             </div>
@@ -677,18 +677,18 @@ export default function PlaceSidebar() {
               <button
                 key={p.id}
                 onClick={() => setOpenMarkerId(p.id)}
-                className="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                className="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <div className="flex items-start gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-800 truncate">{p.name}</p>
-                    {p.address && <p className="text-xs text-gray-500 truncate mt-0.5">{p.address}</p>}
+                    <p className="text-md font-medium text-gray-800 truncate">{p.name}</p>
+                    {p.address && <p className="text-md text-gray-500 truncate mt-0.5">{p.address}</p>}
                     {p.rating != null && (
-                      <span className="text-xs text-amber-500">{'★'.repeat(Math.round(p.rating))} {p.rating}</span>
+                      <span className="text-md text-amber-500">{'★'.repeat(Math.round(p.rating))} {p.rating}</span>
                     )}
                   </div>
                   {p.accessibility.wheelchair_entrance !== false && (
-                    <span className="shrink-0 text-xs bg-indigo-50 text-indigo-500 border border-indigo-100 px-1.5 py-0.5 rounded mt-0.5">♿</span>
+                    <span className="shrink-0 text-md bg-sky-50 text-sky-500 border border-sky-100 px-1.5 py-0.5 rounded mt-0.5">♿</span>
                   )}
                 </div>
               </button>
@@ -703,7 +703,7 @@ export default function PlaceSidebar() {
               <svg className="w-8 h-8 text-gray-300 mx-auto mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
               </svg>
-              <p className="text-sm text-gray-400">尚無搜尋紀錄</p>
+              <p className="text-md text-gray-400">尚無搜尋紀錄</p>
             </div>
           ) : (
             searchHistory.map((h) => (
@@ -713,12 +713,12 @@ export default function PlaceSidebar() {
                   setLeftPanelTab('results')
                   searchByKeyword(h.keyword)
                 }}
-                className="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                className="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer"
               >
                 <svg className="w-4 h-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
                 </svg>
-                <span className="text-sm text-gray-700 truncate">{h.keyword}</span>
+                <span className="text-md text-gray-700 truncate">{h.keyword}</span>
               </button>
             ))
           )}
@@ -727,12 +727,12 @@ export default function PlaceSidebar() {
         /* 收藏列表 */
         <div className="flex-1 overflow-y-auto">
           {loadingBookmarks ? (
-            <p className="px-4 py-8 text-sm text-gray-400 text-center">載入中...</p>
+            <p className="px-4 py-8 text-md text-gray-400 text-center">載入中...</p>
           ) : bookmarks.length === 0 ? (
             <div className="px-4 py-12 text-center">
               <BookmarkIcon filled={false} className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-400">尚無收藏地點</p>
-              <p className="text-xs text-gray-300 mt-1">點擊地標後按收藏按鈕加入</p>
+              <p className="text-md text-gray-400">尚無收藏地點</p>
+              <p className="text-md text-gray-300 mt-1">點擊地標後按收藏按鈕加入</p>
             </div>
           ) : (
             bookmarks.map((b) => (
@@ -752,14 +752,14 @@ export default function PlaceSidebar() {
                   setOpenMarkerId(b.googlePlaceId)
                   setFocusLocation({ lat: b.lat, lng: b.lng, zoom: 16 })
                 }}
-                className="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                className="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">{b.name}</p>
-                    {b.address && <p className="text-xs text-gray-500 truncate mt-0.5">{b.address}</p>}
+                    <p className="text-md font-medium text-gray-800 truncate">{b.name}</p>
+                    {b.address && <p className="text-md text-gray-500 truncate mt-0.5">{b.address}</p>}
                   </div>
-                  <BookmarkIcon filled className="shrink-0 w-4 h-4 text-indigo-400 mt-0.5" />
+                  <BookmarkIcon filled className="shrink-0 w-4 h-4 text-sky-400 mt-0.5" />
                 </div>
               </button>
             ))
