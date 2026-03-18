@@ -13,9 +13,8 @@ model User {
   avatarUrl String?
   provider  String   @default("google")
   createdAt DateTime @default(now())
-
-  ratings Rating[]
-  photos  Photo[]
+  photos    Photo[]
+  ratings   Rating[]
 }
 
 model Bookmark {
@@ -39,36 +38,34 @@ model SearchHistory {
 }
 
 model Place {
-  id          String   @id @default(cuid())
-  googlePlaceId String? @unique
-  name        String
-  address     String?
-  lat         Float
-  lng         Float
-  category    String?  // restaurant, attraction, transport, etc.
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  ratings Rating[]
-  photos  Photo[]
+  id            String   @id @default(cuid())
+  googlePlaceId String?  @unique
+  name          String
+  address       String?
+  lat           Float
+  lng           Float
+  category      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  photos        Photo[]
+  ratings       Rating[]
 }
 
 model Rating {
-  id                  String            @id @default(cuid())
-  placeId             String
-  userId              String?
-  ramp                AccessibilityLevel
-  toilet              AccessibilityLevel
-  parking             AccessibilityLevel
-  entrance            AccessibilityLevel
-  note                String?
-  submittedBy         String?
-  submitterGoogleId   String?
-  submitterAvatarUrl  String?
-  createdAt           DateTime          @default(now())
-
-  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
-  user  User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String             @id @default(cuid())
+  placeId            String
+  userId             String?
+  ramp               AccessibilityLevel
+  toilet             AccessibilityLevel
+  parking            AccessibilityLevel
+  entrance           AccessibilityLevel
+  note               String?
+  createdAt          DateTime           @default(now())
+  submittedBy        String?
+  submitterGoogleId  String?
+  submitterAvatarUrl String?
+  place              Place              @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  user               User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Photo {
@@ -77,9 +74,8 @@ model Photo {
   userId    String
   url       String
   createdAt DateTime @default(now())
-
-  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum AccessibilityLevel {

@@ -3,7 +3,6 @@ import { APIProvider, Map, useMap, useMapsLibrary, MapControl, ControlPosition }
 import { useGoogleLogin } from '@react-oauth/google'
 import FilterBar from '../components/FilterBar'
 import MapMarkers from '../components/MapMarkers'
-import RoutePanel from '../components/RoutePanel'
 import PlaceSidebar from '../components/PlaceSidebar'
 import { useMapStore } from '../store/mapStore'
 import { useAuthStore } from '../store/authStore'
@@ -26,29 +25,6 @@ function MapCameraController() {
   return null
 }
 
-// 使用 geometry library 解碼 polyline 並在地圖上繪製路線
-function RoutePolyline() {
-  const map = useMap()
-  const geometry = useMapsLibrary('geometry')
-  const route = useMapStore((s) => s.route)
-
-  useEffect(() => {
-    if (!map || !geometry || !route?.polyline) return
-
-    const path = geometry.encoding.decodePath(route.polyline)
-    const polyline = new google.maps.Polyline({
-      path,
-      strokeColor: '#38bdf8',
-      strokeWeight: 5,
-      strokeOpacity: 0.8,
-    })
-    polyline.setMap(map)
-
-    return () => polyline.setMap(null)
-  }, [map, geometry, route])
-
-  return null
-}
 
 interface PlaceSuggestion {
   mainText: string
@@ -302,7 +278,7 @@ function UserButton() {
     return (
       <button
         onClick={() => login()}
-        className="absolute bottom-0 -right-2 bg-sky-600 text-white px-4 py-2 w-16 shadow-lg text-md font-medium z-10 cursor-pointer"
+        className="absolute bottom-0 right-2 bg-sky-600 text-white px-4 py-2 w-16 shadow-lg text-md font-medium z-10 cursor-pointer"
       >
   登入
       </button>
@@ -378,7 +354,7 @@ export default function MapPage() {
   const leftPanelOpen = useMapStore((s) => s.leftPanelOpen)
 
   return (
-    <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['places', 'geometry']}>
+    <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['places']}>
       <main className="flex flex-col h-full">
         <header className="text-white px-4 py-3 flex items-center gap-3 shrink-0" style={{ background: 'linear-gradient(to right, #38bdf8, #0284c7)' }}>
           <h1 className="text-lg font-semibold shrink-0 sm:flex hidden">無障礙地圖</h1>
@@ -410,15 +386,11 @@ export default function MapPage() {
           >
             <MapCameraController />
             <MapMarkers />
-            <RoutePolyline />
             <LocateButton />
           </Map>
 
-          {/* 路線規劃面板（地圖下方浮層） */}
-          <RoutePanel />
-
-          {/* 登入按鈕（路線規劃區塊左側） */}
-          <div className="absolute bottom-5 right-32 z-10">
+          {/* 登入按鈕 */}
+          <div className="absolute bottom-5 right-2 z-10">
             <UserButton />
           </div>
 

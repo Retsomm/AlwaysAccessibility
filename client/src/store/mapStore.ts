@@ -28,28 +28,11 @@ export interface DisabilityPoint {
   address: string
 }
 
-export interface RouteStep {
-  instruction: string
-  distance: string
-  duration: string
-  mode: string
-  startLocation?: { lat: number; lng: number }
-}
-
-export interface RouteResult {
-  polyline: string
-  duration: string
-  distance: string
-  steps: RouteStep[]
-}
-
 type PlaceApiItem = Omit<Place, 'filterType'>
 
 interface PlacesApiResponse {
   places?: PlaceApiItem[]
 }
-
-export type RouteMode = 'transit' | 'walking' | 'wheelchair'
 
 interface MapState {
   center: { lat: number; lng: number }
@@ -58,9 +41,7 @@ interface MapState {
   activeFilters: FilterType[]
   places: Place[]
   disabilityPoints: DisabilityPoint[]
-  route: RouteResult | null
   isLoadingPlaces: boolean
-  isLoadingRoute: boolean
   openMarkerId: string | null
   leftPanelOpen: boolean
   leftPanelTab: 'results' | 'bookmarks' | 'history'
@@ -74,8 +55,6 @@ interface MapState {
   setCenter: (center: { lat: number; lng: number }) => void
   fetchDisabilityMap: () => Promise<void>
   searchByKeyword: (keyword: string) => Promise<void>
-  planRoute: (origin: string, destination: string, mode?: RouteMode) => Promise<void>
-  clearRoute: () => void
 }
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
@@ -96,9 +75,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   activeFilters: [],
   places: [],
   disabilityPoints: [],
-  route: null,
   isLoadingPlaces: false,
-  isLoadingRoute: false,
   openMarkerId: null,
   leftPanelOpen: false,
   leftPanelTab: 'results',
@@ -200,22 +177,6 @@ export const useMapStore = create<MapState>((set, get) => ({
     }
   },
 
-  planRoute: async (origin, destination, mode = 'transit') => {
-    set({ isLoadingRoute: true })
-    try {
-      const params = new URLSearchParams({ origin, destination, mode })
-      const res = await fetch(`${API_BASE}/api/directions?${params}`)
-      const data = (await res.json()) as RouteResult & { error?: string }
-      if (data.error) throw new Error(data.error)
-      set({ route: data })
-    } catch {
-      // 不影響 UI
-    } finally {
-      set({ isLoadingRoute: false })
-    }
-  },
-
-  clearRoute: () => set({ route: null }),
 }))
 
 export { FILTER_TYPES }

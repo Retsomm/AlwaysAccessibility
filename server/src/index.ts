@@ -3,7 +3,6 @@ import express from 'express'
 import cors from 'cors'
 import placesRouter from './routes/places'
 import disabilityMapRouter from './routes/disabilityMap'
-import directionsRouter from './routes/directions'
 import ratingsRouter from './routes/ratings'
 import bookmarksRouter from './routes/bookmarks'
 import searchHistoryRouter from './routes/searchHistory'
@@ -23,7 +22,6 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/places', placesRouter)
 app.use('/api/disability-map', disabilityMapRouter)
-app.use('/api/directions', directionsRouter)
 app.use('/api/ratings', ratingsRouter)
 app.use('/api/bookmarks', bookmarksRouter)
 app.use('/api/search-history', searchHistoryRouter)
