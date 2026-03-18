@@ -10,7 +10,7 @@ import { useAuthStore } from '../store/authStore'
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string
 
 // 監聽 focusLocation 並移動地圖鏡頭
-function MapCameraController() {
+const MapCameraController = () => {
   const map = useMap()
   const focusLocation = useMapStore((s) => s.focusLocation)
   const setFocusLocation = useMapStore((s) => s.setFocusLocation)
@@ -65,7 +65,7 @@ interface SearchHistoryItem {
   searchedAt: string
 }
 
-function SearchBar() {
+const SearchBar = () => {
   const { searchByKeyword, isLoadingPlaces } = useMapStore()
   const user = useAuthStore((s) => s.user)
   const [keyword, setKeyword] = useState('')
@@ -260,7 +260,7 @@ function SearchBar() {
   )
 }
 
-function UserButton() {
+const UserButton = () => {
   const { user, setUser, logout } = useAuthStore()
   const [showMenu, setShowMenu] = useState(false)
 
@@ -305,7 +305,7 @@ function UserButton() {
   )
 }
 
-function LocateButton() {
+const LocateButton = () => {
   const { setUserLocation, setFocusLocation } = useMapStore()
   const [locating, setLocating] = useState(false)
 
@@ -330,8 +330,7 @@ function LocateButton() {
         onClick={handleLocate}
         disabled={locating}
         title="定位到目前位置"
-        className="m-2.5 w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-60 transition-colors cursor-pointer"
-        style={{ border: '1px solid rgba(0,0,0,0.12)' }}
+        className="m-2.5 w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-60 transition-colors cursor-pointer border border-black/12"
       >
         {locating ? (
           <svg className="w-5 h-5 animate-spin text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -349,14 +348,14 @@ function LocateButton() {
   )
 }
 
-export default function MapPage() {
+const MapPage = () => {
   const setOpenMarkerId = useMapStore((s) => s.setOpenMarkerId)
   const leftPanelOpen = useMapStore((s) => s.leftPanelOpen)
 
   return (
     <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['places']}>
       <main className="flex flex-col h-full">
-        <header className="text-white px-4 py-3 flex items-center gap-3 shrink-0" style={{ background: 'linear-gradient(to right, #38bdf8, #0284c7)' }}>
+        <header className="text-white px-4 py-3 flex items-center gap-3 shrink-0 bg-linear-to-r from-sky-400 to-sky-600">
           <h1 className="text-lg font-semibold shrink-0 sm:flex hidden">無障礙地圖</h1>
           <SearchBar />
         </header>
@@ -401,3 +400,5 @@ export default function MapPage() {
     </APIProvider>
   )
 }
+
+export default MapPage

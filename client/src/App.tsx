@@ -5,7 +5,7 @@ import GlobalLoadingOverlay from './components/GlobalLoadingOverlay'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string
 
-function App() {
+const App = () => {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <BrowserRouter>
@@ -19,3 +19,4 @@ function App() {
 }
 
 export default App
+

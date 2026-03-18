@@ -2,7 +2,7 @@ import { AdvancedMarker, InfoWindow } from '@vis.gl/react-google-maps'
 import { useMapStore } from '../store/mapStore'
 import type { DisabilityPoint, Place } from '../store/mapStore'
 
-function UserLocationMarker() {
+const UserLocationMarker = () => {
   const userLocation = useMapStore((s) => s.userLocation)
   if (!userLocation) return null
   return (
@@ -15,7 +15,7 @@ function UserLocationMarker() {
   )
 }
 
-function PlaceMarker({ place }: { place: Place }) {
+const PlaceMarker = ({ place }: { place: Place }) => {
   const { openMarkerId, setOpenMarkerId } = useMapStore()
 
   return (
@@ -31,7 +31,7 @@ function PlaceMarker({ place }: { place: Place }) {
   )
 }
 
-function DisabilityPointMarker({ point }: { point: DisabilityPoint }) {
+const DisabilityPointMarker = ({ point }: { point: DisabilityPoint }) => {
   const { openMarkerId, setOpenMarkerId } = useMapStore()
   const open = openMarkerId === point.id
   const position = { lat: point.lat, lng: point.lng }
@@ -61,7 +61,7 @@ function DisabilityPointMarker({ point }: { point: DisabilityPoint }) {
   )
 }
 
-export default function MapMarkers() {
+const MapMarkers = () => {
   const places = useMapStore((s) => s.places)
   const disabilityPoints = useMapStore((s) => s.disabilityPoints)
   const activeFilters = useMapStore((s) => s.activeFilters)
@@ -82,3 +82,5 @@ export default function MapMarkers() {
     </>
   )
 }
+
+export default MapMarkers

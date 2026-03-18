@@ -11,7 +11,7 @@ const PLACE_TYPE_MAP: Record<string, string[]> = {
 const FIELD_MASK =
   'places.id,places.displayName,places.location,places.accessibilityOptions,places.formattedAddress,places.types,places.rating,places.photos'
 
-function mapPlace(p: any): object {
+const mapPlace = (p: any): object => {
   return {
     id: p.id,
     name: p.displayName?.text ?? '',

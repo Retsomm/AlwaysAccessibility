@@ -21,7 +21,7 @@ interface DisabilityPoint {
   address: string
 }
 
-function extractCoord(record: Record<string, string>, keys: string[]): number {
+const extractCoord = (record: Record<string, string>, keys: string[]): number => {
   for (const k of keys) {
     const v = parseFloat(record[k] ?? '')
     if (!isNaN(v)) return v

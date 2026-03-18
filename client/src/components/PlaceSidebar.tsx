@@ -60,7 +60,7 @@ const LEVEL_DISPLAY: Record<AccessibilityLevel, { icon: string; color: string; l
   UNKNOWN: { icon: '?', color: 'text-gray-400', label: '未知' },
 }
 
-function formatDate(iso: string) {
+const formatDate = (iso: string) => {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
   if (diff < 60) return '剛才'
   if (diff < 3600) return `${Math.floor(diff / 60)} 分鐘前`
@@ -69,7 +69,7 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('zh-TW')
 }
 
-function BookmarkIcon({ filled, className = 'w-5 h-5' }: { filled: boolean; className?: string }) {
+const BookmarkIcon = ({ filled, className = 'w-5 h-5' }: { filled: boolean; className?: string }) => {
   return (
     <svg
       className={className}
@@ -85,7 +85,7 @@ function BookmarkIcon({ filled, className = 'w-5 h-5' }: { filled: boolean; clas
   )
 }
 
-function FieldSelector({
+const FieldSelector = ({
   field,
   value,
   onChange,
@@ -93,7 +93,7 @@ function FieldSelector({
   field: (typeof FIELDS)[number]
   value: AccessibilityLevel
   onChange: (v: AccessibilityLevel) => void
-}) {
+}) => {
   return (
     <div className="space-y-1">
       <p className="text-md text-gray-600 font-medium">
@@ -117,7 +117,7 @@ function FieldSelector({
   )
 }
 
-function RatingCard({
+const RatingCard = ({
   rating,
   currentGoogleId,
   onEdit,
@@ -125,7 +125,7 @@ function RatingCard({
   rating: RatingItem
   currentGoogleId?: string
   onEdit: (r: RatingItem) => void
-}) {
+}) => {
   const isOwner = !!currentGoogleId && rating.submitterGoogleId === currentGoogleId
   const displayName = rating.submittedBy ?? '匿名'
   const initial = displayName.slice(0, 1).toUpperCase()
@@ -181,7 +181,7 @@ function RatingCard({
   )
 }
 
-function ReviewFormSection({
+const ReviewFormSection = ({
   form,
   onChange,
   onSubmit,
@@ -195,7 +195,7 @@ function ReviewFormSection({
   onCancel: () => void
   isSubmitting: boolean
   title: string
-}) {
+}) => {
   return (
     <div className="space-y-3">
       <p className="text-md font-semibold text-gray-700">{title}</p>
@@ -233,7 +233,7 @@ function ReviewFormSection({
   )
 }
 
-export default function PlaceSidebar() {
+const PlaceSidebar = () => {
   const {
     openMarkerId, setOpenMarkerId, places, setFocusLocation,
     leftPanelOpen, leftPanelTab, setLeftPanelOpen, setLeftPanelTab, addPlace, searchByKeyword,
@@ -453,7 +453,7 @@ export default function PlaceSidebar() {
           <rect x="3" y="3" width="18" height="18" rx="2" />
           <path d="M9 3v18" />
         </svg>
-        <span className="text-md font-medium" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>地點資訊</span>
+        <span className="text-md font-medium [writing-mode:vertical-rl]">地點資訊</span>
       </button>
     )
   }
@@ -769,3 +769,5 @@ export default function PlaceSidebar() {
     </div>
   )
 }
+
+export default PlaceSidebar

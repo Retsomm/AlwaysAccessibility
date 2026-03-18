@@ -8,13 +8,13 @@ declare global {
   }
 }
 
-function resolveUrl(input: RequestInfo | URL): string {
+const resolveUrl = (input: RequestInfo | URL): string => {
   if (typeof input === 'string') return input
   if (input instanceof URL) return input.toString()
   return input.url
 }
 
-function isApiRequest(input: RequestInfo | URL): boolean {
+const isApiRequest = (input: RequestInfo | URL): boolean => {
   const url = resolveUrl(input)
   if (!url) return false
 
@@ -30,7 +30,7 @@ function isApiRequest(input: RequestInfo | URL): boolean {
   }
 }
 
-export function setupGlobalApiLoading() {
+export const setupGlobalApiLoading = () => {
   if (typeof window === 'undefined' || window.__aaFetchPatched) return
 
   const originalFetch = window.fetch.bind(window)

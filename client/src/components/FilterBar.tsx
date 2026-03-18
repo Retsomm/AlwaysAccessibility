@@ -9,7 +9,7 @@ const FILTERS: { type: FilterType; label: string }[] = [
   { type: 'ramp', label: '無障礙坡道' },
 ]
 
-export default function FilterBar() {
+const FilterBar = () => {
   const { activeFilters, toggleFilter, isLoadingPlaces } = useMapStore()
 
   return (
@@ -45,3 +45,5 @@ export default function FilterBar() {
     </div>
   )
 }
+
+export default FilterBar
