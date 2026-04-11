@@ -1,9 +1,9 @@
 import { useApiLoadingStore } from '../store/apiLoadingStore'
 
 const GlobalLoadingOverlay = () => {
-  const pendingCount = useApiLoadingStore((state) => state.pendingCount)
+  const isLoading = useApiLoadingStore((state) => state.pendingCount > 0)
 
-  if (pendingCount === 0) return null
+  if (!isLoading) return null
 
   return (
     <div className="fixed inset-0 z-9999 flex items-center justify-center bg-white/50 backdrop-blur-[1px]">

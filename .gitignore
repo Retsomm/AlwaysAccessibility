@@ -11,3 +11,4 @@ server/src/generated/
 
 # Vite
 client/.vite/
+.claude
