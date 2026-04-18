@@ -9,7 +9,6 @@ import { useAuthStore } from '../store/authStore'
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string
 
-// 監聽 focusLocation 並移動地圖鏡頭
 const MapCameraController = () => {
   const map = useMap()
   const focusLocation = useMapStore((s) => s.focusLocation)
@@ -24,7 +23,6 @@ const MapCameraController = () => {
 
   return null
 }
-
 
 interface PlaceSuggestion {
   mainText: string
@@ -75,7 +73,6 @@ const SearchBar = () => {
   const [showRecent, setShowRecent] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  // 預先載入 places library（讓 importLibrary 後續呼叫立即回傳）
   useMapsLibrary('places')
 
   useEffect(() => {
@@ -194,68 +191,153 @@ const SearchBar = () => {
   }
 
   return (
-    <div ref={containerRef} className="flex gap-2 flex-1 min-w-60 md:min-w-0 relative">
-      <div className="flex-1 relative min-w-0">
+    <div ref={containerRef} style={{ flex: 1, maxWidth: 640, position: 'relative' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        background: 'var(--bg-sunk)',
+        border: '1px solid var(--hairline)',
+        borderRadius: 14,
+        padding: '9px 14px',
+        transition: 'background 0.15s',
+      }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--ink-3)', flexShrink: 0 }}>
+          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+        </svg>
         <input
           value={keyword}
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           onFocus={() => {
-            if (suggestions.length > 0) { setShowSuggestions(true); return }
-            if (!keyword.trim() && user) { fetchRecentSearches().then(() => setShowRecent(true)) }
+            if (suggestions.length > 0) setShowSuggestions(true)
           }}
-          placeholder="搜尋地點（如：麥當勞、台北車站）"
-          className="w-full bg-white/20 placeholder-white/70 text-white text-md rounded-lg px-3 py-1.5 outline-none focus:bg-white/30"
-          aria-label="關鍵字搜尋"
+          placeholder="搜尋地點，例如：麥當勞、台北車站…"
           autoComplete="off"
+          style={{
+            flex: 1,
+            border: 0,
+            outline: 0,
+            background: 'transparent',
+            fontSize: 14,
+            color: 'var(--ink)',
+          }}
         />
-        {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl overflow-hidden z-50">
-            {suggestions.map((s, i) => (
-              <button
-                key={i}
-                onMouseDown={(e) => { e.preventDefault(); handleSelectSuggestion(s) }}
-                className="w-full text-left px-3 py-2.5 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors cursor-pointer"
-              >
-                <p className="text-md font-medium text-gray-800 truncate">{s.mainText}</p>
-                {s.secondaryText && (
-                  <p className="text-md text-gray-400 truncate mt-0.5">{s.secondaryText}</p>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-        {showRecent && !showSuggestions && recentSearches.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl overflow-hidden z-50">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
-              <span className="text-md text-gray-400 font-medium">最近搜尋</span>
-              <button
-                onMouseDown={(e) => { e.preventDefault(); handleClearHistory() }}
-                className="text-md text-gray-400 hover:text-gray-600"
-              >
-                清除
-              </button>
-            </div>
-            {recentSearches.map((h) => (
-              <button
-                key={h.id}
-                onMouseDown={(e) => { e.preventDefault(); handleSelectRecent(h.keyword) }}
-                className="w-full text-left px-3 py-2.5 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors flex items-center gap-2 cursor-pointer"
-              >
-                <span className="text-gray-400 text-md">🕐</span>
-                <span className="text-md text-gray-700 truncate">{h.keyword}</span>
-              </button>
-            ))}
-          </div>
-        )}
+        <span className="hidden sm:inline-flex" style={{
+          fontFamily: 'monospace',
+          fontSize: 11,
+          color: 'var(--ink-3)',
+          background: 'var(--panel)',
+          border: '1px solid var(--hairline)',
+          borderRadius: 4,
+          padding: '2px 6px',
+          flexShrink: 0,
+        }}>⌘K</span>
+        <button
+          onClick={handleSearch}
+          disabled={isLoadingPlaces || !keyword.trim()}
+          style={{
+            background: 'var(--ink)',
+            color: 'var(--bg)',
+            borderRadius: 10,
+            padding: '7px 12px',
+            fontWeight: 500,
+            fontSize: 13,
+            border: 0,
+            flexShrink: 0,
+            opacity: (isLoadingPlaces || !keyword.trim()) ? 0.4 : 1,
+            cursor: (isLoadingPlaces || !keyword.trim()) ? 'not-allowed' : 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {isLoadingPlaces ? '…' : '搜尋'}
+        </button>
       </div>
-      <button
-        onClick={handleSearch}
-        disabled={isLoadingPlaces || !keyword.trim()}
-        className="bg-white text-sky-600 px-3 py-1.5 rounded-lg text-md font-medium disabled:opacity-50 shrink-0 cursor-pointer"
-      >
-        {isLoadingPlaces ? '搜尋中' : '搜尋'}
-      </button>
+
+      {showSuggestions && suggestions.length > 0 && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 6px)',
+          left: 0,
+          right: 0,
+          background: 'var(--panel)',
+          border: '1px solid var(--hairline)',
+          borderRadius: 14,
+          boxShadow: 'var(--shadow-lg)',
+          overflow: 'hidden',
+          zIndex: 50,
+        }}>
+          {suggestions.map((s, i) => (
+            <button
+              key={i}
+              onMouseDown={(e) => { e.preventDefault(); handleSelectSuggestion(s) }}
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 14px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: i < suggestions.length - 1 ? '1px solid var(--hairline)' : undefined,
+                cursor: 'pointer',
+                display: 'block',
+              }}
+              className="hover:bg-[var(--bg-sunk)] transition-colors"
+            >
+              <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.mainText}</p>
+              {s.secondaryText && (
+                <p style={{ fontSize: 12, color: 'var(--ink-3)', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.secondaryText}</p>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {showRecent && !showSuggestions && recentSearches.length > 0 && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 6px)',
+          left: 0,
+          right: 0,
+          background: 'var(--panel)',
+          border: '1px solid var(--hairline)',
+          borderRadius: 14,
+          boxShadow: 'var(--shadow-lg)',
+          overflow: 'hidden',
+          zIndex: 50,
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px 8px', borderBottom: '1px solid var(--hairline)' }}>
+            <span style={{ fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>最近搜尋</span>
+            <button
+              onMouseDown={(e) => { e.preventDefault(); handleClearHistory() }}
+              style={{ fontSize: 12, color: 'var(--ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}
+            >清除</button>
+          </div>
+          {recentSearches.map((h) => (
+            <button
+              key={h.id}
+              onMouseDown={(e) => { e.preventDefault(); handleSelectRecent(h.keyword) }}
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                borderBottom: '1px solid var(--hairline)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+              className="hover:bg-[var(--bg-sunk)] transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--ink-3)', flexShrink: 0 }}>
+                <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+              </svg>
+              <span style={{ fontSize: 13, color: 'var(--ink-2)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.keyword}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -263,6 +345,7 @@ const SearchBar = () => {
 const UserButton = () => {
   const { user, setUser, logout } = useAuthStore()
   const [showMenu, setShowMenu] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -274,28 +357,88 @@ const UserButton = () => {
     },
   })
 
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setShowMenu(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
   if (!user) {
     return (
       <button
         onClick={() => login()}
-        className="absolute bottom-0 right-2 bg-sky-600 text-white px-4 py-2 w-16 shadow-lg text-md font-medium z-10 cursor-pointer"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '7px 14px',
+          borderRadius: 999,
+          border: '1px solid var(--hairline)',
+          background: 'var(--panel)',
+          fontSize: 13,
+          color: 'var(--ink-2)',
+          fontWeight: 500,
+          flexShrink: 0,
+          transition: 'all 0.12s',
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+        }}
       >
-  登入
+        登入
       </button>
     )
   }
 
   return (
-    <div className="relative shrink-0">
-      <button onClick={() => setShowMenu((v) => !v)} className="flex items-center gap-1.5 cursor-pointer">
-        <img src={user.avatar} alt={user.name} className="w-10 h-10 border-2 border-white/60" />
+    <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
+      <button
+        onClick={() => setShowMenu((v) => !v)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '4px',
+          borderRadius: 999,
+          border: '1px solid var(--hairline)',
+          background: 'var(--panel)',
+          cursor: 'pointer',
+          transition: 'all 0.12s',
+        }}
+      >
+        <img src={user.avatar} alt={user.name} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
+        <span className="hidden sm:inline" style={{ fontSize: 13, color: 'var(--ink-2)', fontWeight: 500, paddingRight: 8 }}>{user.name}</span>
       </button>
       {showMenu && (
-        <div className="absolute right-0 bottom-9 bg-white rounded-xl shadow-lg py-1 min-w-35 z-20">
-          <p className="px-3 py-1.5 text-md text-gray-500 border-b border-gray-100">{user.name}</p>
+        <div style={{
+          position: 'absolute',
+          right: 0,
+          top: 'calc(100% + 6px)',
+          background: 'var(--panel)',
+          border: '1px solid var(--hairline)',
+          borderRadius: 14,
+          boxShadow: 'var(--shadow-lg)',
+          overflow: 'hidden',
+          minWidth: 160,
+          zIndex: 50,
+        }}>
+          <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--hairline)' }}>
+            <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>{user.email}</span>
+          </div>
           <button
-            onClick={() => { logout(); setShowMenu(false) }}
-            className="w-full text-left px-3 py-2 text-md text-red-500 hover:bg-gray-50 cursor-pointer"
+            onMouseDown={(e) => { e.preventDefault(); logout(); setShowMenu(false) }}
+            style={{
+              width: '100%',
+              textAlign: 'left',
+              padding: '10px 14px',
+              fontSize: 13,
+              color: 'var(--ink-2)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            className="hover:bg-[var(--bg-sunk)] transition-colors"
           >
             登出
           </button>
@@ -330,17 +473,30 @@ const LocateButton = () => {
         onClick={handleLocate}
         disabled={locating}
         title="定位到目前位置"
-        className="m-2.5 w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-60 transition-colors cursor-pointer border border-black/12"
+        style={{
+          margin: 10,
+          width: 40,
+          height: 40,
+          background: 'var(--panel)',
+          border: '1px solid var(--hairline)',
+          borderRadius: 10,
+          boxShadow: 'var(--shadow-md)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--ink-2)',
+          cursor: locating ? 'not-allowed' : 'pointer',
+          opacity: locating ? 0.6 : 1,
+          transition: 'all 0.1s',
+        }}
       >
         {locating ? (
-          <svg className="w-5 h-5 animate-spin text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" />
+          <svg className="w-5 h-5 animate-spin" style={{ color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round"/>
           </svg>
         ) : (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-            <circle cx="12" cy="12" r="7" />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/>
           </svg>
         )}
       </button>
@@ -350,27 +506,57 @@ const LocateButton = () => {
 
 const MapPage = () => {
   const setOpenMarkerId = useMapStore((s) => s.setOpenMarkerId)
-  const leftPanelOpen = useMapStore((s) => s.leftPanelOpen)
 
   return (
     <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['places']}>
-      <main className="flex flex-col h-full">
-        <header className="text-white px-4 py-3 flex items-center gap-3 shrink-0 bg-linear-to-r from-sky-400 to-sky-600">
-          <h1 className="text-lg font-semibold shrink-0 sm:flex hidden">無障礙地圖</h1>
-          <SearchBar />
-        </header>
-
-        {/* 手機版篩選列（header 下方靜態列） */}
-        <div className="md:hidden shrink-0 bg-gray-50 border-b border-gray-200">
-          <FilterBar />
-        </div>
-
-        <div className="flex-1 relative">
-          {/* 桌機版過濾器列（地圖上方浮層） */}
-          <div className={`hidden md:block absolute top-2 right-0 z-10 pointer-events-none transition-all duration-200 w-fit ${leftPanelOpen ? 'left-80' : 'left-10'}`}>
-            <FilterBar />
+      <main style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg)' }}>
+        {/* Header */}
+        <header style={{
+          flexShrink: 0,
+          background: 'var(--panel-warm)',
+          borderBottom: '1px solid var(--hairline)',
+          padding: '10px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          zIndex: 40,
+          position: 'relative',
+        }}>
+          {/* Brand */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <div style={{
+              width: 32,
+              height: 32,
+              borderRadius: 9,
+              background: 'var(--ink)',
+              color: 'var(--bg)',
+              display: 'grid',
+              placeItems: 'center',
+              flexShrink: 0,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="5" r="2"/><path d="M9 9v4h4l3 5M9 13l-3 6"/>
+              </svg>
+            </div>
+            <div className="hidden sm:block">
+              <div style={{ fontFamily: 'var(--serif)', fontSize: 17, fontWeight: 500, letterSpacing: '-0.01em', color: 'var(--ink)' }}>
+                無障礙地圖
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: -2 }}>
+                Always Accessible
+              </div>
+            </div>
           </div>
 
+          <SearchBar />
+          <UserButton />
+        </header>
+
+        {/* Filter bar */}
+        <FilterBar />
+
+        {/* Map area */}
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <Map
             defaultCenter={{ lat: 25.0478, lng: 121.5319 }}
             defaultZoom={14}
@@ -388,12 +574,6 @@ const MapPage = () => {
             <LocateButton />
           </Map>
 
-          {/* 登入按鈕 */}
-          <div className="absolute bottom-5 right-2 z-10">
-            <UserButton />
-          </div>
-
-          {/* 地點詳情側邊欄 */}
           <PlaceSidebar />
         </div>
       </main>

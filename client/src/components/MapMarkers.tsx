@@ -21,9 +21,22 @@ const PlaceMarker = ({ place }: { place: Place }) => {
   return (
     <AdvancedMarker position={place.location} onClick={() => setOpenMarkerId(place.id)} title={place.name}>
       <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-md font-bold shadow-md border-2 border-white ${
-          openMarkerId === place.id ? 'bg-sky-600 scale-110' : place.accessibility.wheelchair_entrance !== false ? 'bg-sky-600' : 'bg-gray-400'
-        } transition-transform`}
+        style={{
+          width: 32, height: 32,
+          borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'white',
+          fontSize: 14, fontWeight: 700,
+          boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+          border: '2px solid white',
+          background: openMarkerId === place.id
+            ? 'oklch(0.50 0.10 160)'
+            : place.accessibility.wheelchair_entrance !== false
+              ? 'oklch(0.58 0.10 160)'
+              : 'oklch(0.55 0 0)',
+          transform: openMarkerId === place.id ? 'scale(1.15)' : 'scale(1)',
+          transition: 'transform 0.15s',
+        }}
       >
         ♿
       </div>
