@@ -257,7 +257,7 @@ const SearchBar = () => {
   )
 }
 
-const UserButton = () => {
+const UserButton = ({ menuUp = false }: { menuUp?: boolean }) => {
   const { user, setUser, logout } = useAuthStore()
   const [showMenu, setShowMenu] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -329,7 +329,7 @@ const UserButton = () => {
         <div style={{
           position: 'absolute',
           right: 0,
-          bottom: 'calc(100% + 6px)',
+          ...(menuUp ? { bottom: 'calc(100% + 6px)' } : { top: 'calc(100% + 6px)' }),
           background: 'var(--panel)',
           border: '1px solid var(--hairline)',
           borderRadius: 14,
@@ -463,7 +463,7 @@ const MapPage = () => {
 
         {/* 手機：登入按鈕浮動在右下角 */}
         <div className="sm:hidden user-btn-fab">
-          <UserButton />
+          <UserButton menuUp />
         </div>
 
         {/* Filter bar */}
