@@ -329,7 +329,7 @@ const UserButton = () => {
         <div style={{
           position: 'absolute',
           right: 0,
-          top: 'calc(100% + 6px)',
+          bottom: 'calc(100% + 6px)',
           background: 'var(--panel)',
           border: '1px solid var(--hairline)',
           borderRadius: 14,
