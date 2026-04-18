@@ -57,11 +57,6 @@ interface GoogleMapsPlacesLibrary {
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 
-interface SearchHistoryItem {
-  id: string
-  keyword: string
-  searchedAt: string
-}
 
 const SearchBar = () => {
   const { searchByKeyword, isLoadingPlaces } = useMapStore()
@@ -69,8 +64,6 @@ const SearchBar = () => {
   const [keyword, setKeyword] = useState('')
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [recentSearches, setRecentSearches] = useState<SearchHistoryItem[]>([])
-  const [showRecent, setShowRecent] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useMapsLibrary('places')
@@ -79,23 +72,11 @@ const SearchBar = () => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setShowSuggestions(false)
-        setShowRecent(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
-  const fetchRecentSearches = useCallback(async () => {
-    if (!user) return
-    try {
-      const res = await fetch(`${API_BASE}/api/search-history?userId=${encodeURIComponent(user.id)}`)
-      const data = (await res.json()) as { histories?: SearchHistoryItem[] }
-      setRecentSearches(data.histories ?? [])
-    } catch {
-      setRecentSearches([])
-    }
-  }, [user])
 
   const saveSearchHistory = useCallback(async (kw: string) => {
     if (!user) return
@@ -151,7 +132,6 @@ const SearchBar = () => {
       setShowSuggestions(false)
       return
     }
-    setShowRecent(false)
     debounceRef.current = setTimeout(() => fetchSuggestions(value), 300)
   }
 
@@ -159,7 +139,6 @@ const SearchBar = () => {
     setKeyword(s.mainText)
     setSuggestions([])
     setShowSuggestions(false)
-    setShowRecent(false)
     saveSearchHistory(s.mainText)
     searchByKeyword(s.mainText)
   }
@@ -168,26 +147,8 @@ const SearchBar = () => {
     if (!keyword.trim()) return
     setSuggestions([])
     setShowSuggestions(false)
-    setShowRecent(false)
     saveSearchHistory(keyword.trim())
     searchByKeyword(keyword.trim())
-  }
-
-  const handleSelectRecent = (kw: string) => {
-    setKeyword(kw)
-    setShowRecent(false)
-    searchByKeyword(kw)
-  }
-
-  const handleClearHistory = async () => {
-    if (!user) return
-    try {
-      await fetch(`${API_BASE}/api/search-history?userId=${encodeURIComponent(user.id)}`, { method: 'DELETE' })
-      setRecentSearches([])
-      setShowRecent(false)
-    } catch {
-      // 靜默失敗
-    }
   }
 
   return (
@@ -292,52 +253,6 @@ const SearchBar = () => {
         </div>
       )}
 
-      {showRecent && !showSuggestions && recentSearches.length > 0 && (
-        <div style={{
-          position: 'absolute',
-          top: 'calc(100% + 6px)',
-          left: 0,
-          right: 0,
-          background: 'var(--panel)',
-          border: '1px solid var(--hairline)',
-          borderRadius: 14,
-          boxShadow: 'var(--shadow-lg)',
-          overflow: 'hidden',
-          zIndex: 50,
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px 8px', borderBottom: '1px solid var(--hairline)' }}>
-            <span style={{ fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>最近搜尋</span>
-            <button
-              onMouseDown={(e) => { e.preventDefault(); handleClearHistory() }}
-              style={{ fontSize: 12, color: 'var(--ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}
-            >清除</button>
-          </div>
-          {recentSearches.map((h) => (
-            <button
-              key={h.id}
-              onMouseDown={(e) => { e.preventDefault(); handleSelectRecent(h.keyword) }}
-              style={{
-                width: '100%',
-                textAlign: 'left',
-                padding: '10px 14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                borderBottom: '1px solid var(--hairline)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-              className="hover:bg-[var(--bg-sunk)] transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--ink-3)', flexShrink: 0 }}>
-                <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
-              </svg>
-              <span style={{ fontSize: 13, color: 'var(--ink-2)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.keyword}</span>
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
