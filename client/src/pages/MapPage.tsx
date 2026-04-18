@@ -152,7 +152,7 @@ const SearchBar = () => {
   }
 
   return (
-    <div ref={containerRef} style={{ flex: 1, maxWidth: 640, position: 'relative' }}>
+    <div ref={containerRef} className="search-container">
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -426,45 +426,47 @@ const MapPage = () => {
     <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['places']}>
       <main style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg)' }}>
         {/* Header */}
-        <header style={{
-          flexShrink: 0,
-          background: 'var(--panel-warm)',
-          borderBottom: '1px solid var(--hairline)',
-          padding: '10px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          zIndex: 40,
-          position: 'relative',
-        }}>
-          {/* Brand */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <div style={{
-              width: 32,
-              height: 32,
-              borderRadius: 9,
-              background: 'var(--ink)',
-              color: 'var(--bg)',
-              display: 'grid',
-              placeItems: 'center',
-              flexShrink: 0,
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="5" r="2"/><path d="M9 9v4h4l3 5M9 13l-3 6"/>
-              </svg>
-            </div>
-            <div className="hidden sm:block">
-              <div style={{ fontFamily: 'var(--serif)', fontSize: 17, fontWeight: 500, letterSpacing: '-0.01em', color: 'var(--ink)' }}>
-                無障礙地圖
+        <header className="header-bar">
+          {/* 第一行（手機）/ 單行（桌面） */}
+          <div className="header-row">
+            {/* Brand */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+              <div style={{
+                width: 32,
+                height: 32,
+                borderRadius: 9,
+                background: 'var(--ink)',
+                color: 'var(--bg)',
+                display: 'grid',
+                placeItems: 'center',
+                flexShrink: 0,
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="5" r="2"/><path d="M9 9v4h4l3 5M9 13l-3 6"/>
+                </svg>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: -2 }}>
-                Always Accessible
+              <div className="hidden sm:block">
+                <div style={{ fontFamily: 'var(--serif)', fontSize: 17, fontWeight: 500, letterSpacing: '-0.01em', color: 'var(--ink)' }}>
+                  無障礙地圖
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: -2 }}>
+                  Always Accessible
+                </div>
               </div>
             </div>
+
+            {/* 桌面：搜尋框在中間 */}
+            <div className="hidden sm:flex" style={{ flex: 1 }}>
+              <SearchBar />
+            </div>
+
+            <UserButton />
           </div>
 
-          <SearchBar />
-          <UserButton />
+          {/* 手機：搜尋框獨立一行 */}
+          <div className="sm:hidden">
+            <SearchBar />
+          </div>
         </header>
 
         {/* Filter bar */}
